@@ -1,0 +1,3804 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Circus Charlie - Estilo Famicom</title>
+    <!-- Tipografía arcade Google Fonts (fallback a monospace si no carga) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            min-height: 100vh;
+            overflow: hidden;
+            font-family: 'Press Start 2P', monospace;
+            /* Fondo atmosférico de carpa de circo nocturna */
+            background:
+                radial-gradient(ellipse 80% 50% at 50% 0%, #5a0030 0%, transparent 70%),
+                radial-gradient(ellipse 60% 80% at 50% 100%, #2a0020 0%, transparent 60%),
+                linear-gradient(180deg, #1a0010 0%, #050008 100%);
+            background-attachment: fixed;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Capa de halos ambientales (no interactiva) */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at 15% 25%, rgba(255, 100, 200, 0.15), transparent 35%),
+                radial-gradient(circle at 85% 75%, rgba(255, 220, 80, 0.10), transparent 35%),
+                radial-gradient(circle at 50% 50%, rgba(0, 200, 255, 0.05), transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+            animation: ambient-pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes ambient-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* === STAGE: contenedor general === */
+        .stage {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            max-width: 100vw;
+            animation: stage-entrance 1s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+        }
+
+        @keyframes stage-entrance {
+            from {
+                opacity: 0;
+                transform: scale(0.92) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        /* Reduced motion: respeta la preferencia del usuario */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* === TÍTULO sobre el juego === */
+        .marquee-title {
+            font-family: 'Bungee', 'Press Start 2P', monospace;
+            font-size: clamp(18px, 4.5vh, 36px);
+            font-weight: 400;
+            letter-spacing: 4px;
+            line-height: 1;
+            margin: 0;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+        .title-text {
+            background: linear-gradient(135deg, #ffee00 0%, #ff8800 35%, #ff44aa 65%, #00d4ff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter:
+                drop-shadow(2px 2px 0 #440011)
+                drop-shadow(4px 4px 0 #220008)
+                drop-shadow(0 0 12px rgba(255, 220, 100, 0.4));
+            animation: title-glow 3s ease-in-out infinite;
+        }
+
+        @keyframes title-glow {
+            0%, 100% { filter:
+                drop-shadow(2px 2px 0 #440011)
+                drop-shadow(4px 4px 0 #220008)
+                drop-shadow(0 0 12px rgba(255, 220, 100, 0.4)); }
+            50% { filter:
+                drop-shadow(2px 2px 0 #440011)
+                drop-shadow(4px 4px 0 #220008)
+                drop-shadow(0 0 30px rgba(255, 220, 100, 0.85)); }
+        }
+
+        /* === FRAME tipo carpa de circo con bombillas === */
+        .screen-frame {
+            position: relative;
+            padding: 22px;
+            background:
+                linear-gradient(180deg, #aa1144 0%, #771030 50%, #441020 100%);
+            border-radius: 14px;
+            box-shadow:
+                inset 0 2px 6px rgba(255, 255, 255, 0.2),
+                inset 0 -2px 6px rgba(0, 0, 0, 0.6),
+                0 0 60px rgba(255, 100, 180, 0.35),
+                0 16px 40px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Bombillas tipo marquesina — más sutiles que antes */
+        .bulbs {
+            position: absolute;
+            pointer-events: none;
+            background-image:
+                radial-gradient(circle 3.5px at 11px 11px, #fff7aa 30%, #ffcc00 55%, transparent 75%);
+            filter: drop-shadow(0 0 4px #ffaa00);
+            animation: bulb-blink 1.8s ease-in-out infinite;
+            opacity: 0.85;
+        }
+        .bulbs-2 {
+            background-image:
+                radial-gradient(circle 3.5px at 11px 11px, #ffccff 30%, #ee3399 55%, transparent 75%);
+            filter: drop-shadow(0 0 4px #cc3388);
+            animation: bulb-blink-2 1.8s ease-in-out infinite;
+            opacity: 0.85;
+        }
+
+        .bulbs-h {
+            left: 22px;
+            right: 22px;
+            height: 22px;
+            background-size: 22px 22px;
+            background-repeat: repeat-x;
+        }
+        .bulbs-v {
+            top: 22px;
+            bottom: 22px;
+            width: 22px;
+            background-size: 22px 22px;
+            background-repeat: repeat-y;
+        }
+
+        .bulbs-top    { top: 0; }
+        .bulbs-bot    { bottom: 0; }
+        .bulbs-left   { left: 0; }
+        .bulbs-right  { right: 0; }
+
+        /* Esquinas decorativas (bombilla grande pero más sutil) */
+        .corner {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: radial-gradient(circle 5px at 11px 11px, #fff7aa 30%, #ffaa00 60%, transparent 75%);
+            filter: drop-shadow(0 0 6px #ffaa00);
+            pointer-events: none;
+            animation: bulb-blink 1.8s ease-in-out infinite;
+            opacity: 0.9;
+        }
+        .corner-tl { top: 0; left: 0; }
+        .corner-tr { top: 0; right: 0; }
+        .corner-bl { bottom: 0; left: 0; }
+        .corner-br { bottom: 0; right: 0; }
+
+        @keyframes bulb-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.45; }
+        }
+        @keyframes bulb-blink-2 {
+            0%, 100% { opacity: 0.45; }
+            50% { opacity: 1; }
+        }
+
+        /* La offsets de bombillas 2 (pink) para que estén entre las amarillas */
+        .bulbs-2.bulbs-h { background-position: 11px 0; }
+        .bulbs-2.bulbs-v { background-position: 0 11px; }
+
+        /* === CANVAS del juego === */
+        canvas {
+            display: block;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            cursor: pointer;
+            background: #000;
+            border-radius: 6px;
+            box-shadow:
+                inset 0 0 0 2px #000,
+                0 0 0 3px rgba(0, 0, 0, 0.8),
+                0 0 24px rgba(255, 200, 0, 0.2);
+            /* Tamaño responsive 11-23 pulgadas, deja espacio para título y footer */
+            width: min(94vw, calc(82vh * 768 / 480));
+            height: auto;
+            aspect-ratio: 768 / 480;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* === FOOTER con info del evento === */
+        .marquee-footer {
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(7px, 1.2vh, 10px);
+            color: rgba(255, 200, 120, 0.55);
+            letter-spacing: 3px;
+            text-align: center;
+            line-height: 1.5;
+            text-transform: uppercase;
+        }
+        .marquee-footer .accent {
+            color: #ffcc44;
+            text-shadow: 0 0 8px rgba(255, 180, 0, 0.6);
+        }
+
+        /* Estrellas decorativas alrededor del título */
+        .title-stars {
+            display: inline-block;
+            color: #ffee00;
+            text-shadow:
+                0 0 8px #ffaa00,
+                0 0 16px rgba(255, 170, 0, 0.6);
+            animation: star-spin 3s linear infinite;
+            font-size: 0.7em;
+            line-height: 1;
+        }
+        @keyframes star-spin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.25); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+        /* La estrella derecha gira al revés para variedad */
+        .marquee-title .title-stars:last-child {
+            animation-direction: reverse;
+        }
+    </style>
+</head>
+<body>
+    <div class="stage">
+        <h1 class="marquee-title">
+            <span class="title-stars">★</span>
+            <span class="title-text">CIRCUS CHARLIE</span>
+            <span class="title-stars">★</span>
+        </h1>
+
+        <div class="screen-frame">
+            <div class="bulbs bulbs-h bulbs-top"></div>
+            <div class="bulbs bulbs-h bulbs-bot"></div>
+            <div class="bulbs bulbs-v bulbs-left"></div>
+            <div class="bulbs bulbs-v bulbs-right"></div>
+            <div class="bulbs bulbs-2 bulbs-h bulbs-top"></div>
+            <div class="bulbs bulbs-2 bulbs-h bulbs-bot"></div>
+            <div class="bulbs bulbs-2 bulbs-v bulbs-left"></div>
+            <div class="bulbs bulbs-2 bulbs-v bulbs-right"></div>
+            <div class="corner corner-tl"></div>
+            <div class="corner corner-tr"></div>
+            <div class="corner corner-bl"></div>
+            <div class="corner corner-br"></div>
+
+            <canvas id="game" width="768" height="480"></canvas>
+        </div>
+
+        <p class="marquee-footer">
+            <span class="accent">Stand de Circo</span>
+            &nbsp;·&nbsp; UP Contenidos y Creatividad 3
+            &nbsp;·&nbsp; <span class="accent">2026</span>
+        </p>
+    </div>
+
+<script>
+/* ============================================================
+   CIRCUS CHARLIE - Adaptación estilo Famicom/NES
+   Archivo único HTML5 Canvas + JavaScript vanilla
+   ============================================================ */
+
+// =================== CONSTANTES GLOBALES =====================
+const W = 768;                       // Ancho del canvas
+const H = 480;                       // Alto del canvas
+const GROUND_Y = 410;                // Y donde están los pies de Charlie+León
+const PLAYER_SCREEN_X = 200;         // X fija de Charlie en pantalla (tercio izquierdo)
+
+// Velocidades de scroll por nivel (progresión real de dificultad)
+const RUN_SPEED_STAGE1 = 140;        // px/s — fácil (intro: león + aros)
+const RUN_SPEED_STAGE2 = 175;        // px/s — medio (NUEVA mecánica: caballo + vallas)
+const RUN_SPEED_STAGE3 = 200;        // px/s — DIFÍCIL (mix de obstáculos al ritmo más rápido)
+
+// Física del salto. Pico ≈ 80 px, duración total ≈ 0.8 s (más hangtime).
+const JUMP_VEL = -400;               // px/s (velocidad inicial vertical)
+const GRAVITY  = 1000;               // px/s²  (gravedad más suave = más tiempo en el aire)
+
+// Tamaños VISUALES del sprite Charlie+León
+const PL_HALF_W   = 22;
+const PL_HEIGHT   = 56;
+
+// Tamaños de COLISIÓN del player (forgiveness — más pequeño que el sprite)
+const PL_COL_HALF_W = 12;
+const PL_COL_HEIGHT = 36;
+
+// Aros de fuego — dimensiones VISUALES (elipse vertical 70 × 110)
+const HOOP_VIS_HALF_W = 35;          // ancho visual = 70 px
+const HOOP_VIS_HALF_H = 55;          // alto visual  = 110 px
+const HOOP_STROKE_OUT = 8;           // grosor stroke naranja
+const HOOP_STROKE_IN  = 3;           // grosor stroke amarillo
+
+// Aros de fuego — dimensiones de COLISIÓN (mucho más pequeñas = más forgiveness)
+const HOOP_COL_HALF_W = 16;          // ancho colisión = 32 px (vs 70 visual → 54% más chico)
+const HOOP_COL_HALF_H = 25;          // alto colisión  = 50 px (vs 110 visual → 55% más chico)
+const HOOP_COL_RIM    = 4;
+
+// Longitud del nivel y conversión a metros (1 metro = 30 px → 100M = 3000 px)
+const STAGE_LENGTH_PX = 3000;
+const PX_PER_METER    = 30;
+
+// =================== PALETA DE COLORES NES ===================
+const COL = {
+    sky:           '#000000',
+    carpaOrange:   '#ff7a00',
+    carpaRed:      '#cc1010',
+    carpaWhite:    '#ffffff',
+    carpaBorder:   '#440000',
+    festoonCyan:   '#00d4ff',
+    festoonPink:   '#ff44aa',
+    festoonWhite:  '#ffeeee',
+    festoonRope:   '#aa8800',
+    tentRed:       '#aa0011',
+    tentDark:      '#550000',
+    tentPole:      '#cccccc',
+    elephantGray:  '#a0a0a0',
+    elephantDark:  '#555555',
+
+    groundGreen:   '#1a7a1a',
+    groundLine:    '#2db32d',
+    groundDark:    '#0a3a0a',
+
+    cHair:   '#ff66aa',
+    cFace:   '#ffcc99',
+    cBody:   '#0099ff',
+    cDetail: '#ffffff',
+    cLeg:    '#ffaadd',
+    cShoe:   '#aa3300',
+    cEye:    '#000000',
+
+    lBody:   '#aa4422',
+    lMane:   '#661100',
+    lManeL:  '#883300',
+    lBelly:  '#dd6633',
+    lDark:   '#330000',
+
+    hOrange: '#FF8C00',
+    hYellow: '#FFD700',
+    hSpark:  '#ffff88',
+    hSupport:'#aa44ff',
+    hSupDark:'#661199',
+
+    tCup:    '#ee2244',
+    tCupHi:  '#ff6688',
+    tCupLip: '#ffffff',
+    tTea:    '#884422',
+    flameO:  '#ff6600',
+    flameY:  '#ffee00',
+
+    hudWhite:   '#ffffff',
+    hudYellow:  '#ffee00',
+    hudMagenta: '#ff44aa',
+    hudRed:     '#cc0000',
+    hudCyan:    '#00e5ff',
+    hudGreen:   '#33ff66',
+    hudOrange:  '#ff8800'
+};
+
+// =================== INPUT HANDLER (mouse + touch) ===========
+// La consigna del proyecto requiere interacción con mouse. Implementamos:
+//   - mousedown / touchstart  → genera evento "jumpPressed" (edge-trigger)
+//   - mouseup / touchend      → libera (para variable jump)
+// La detección funciona en TODO el canvas: el jugador hace click donde quiera.
+class InputHandler {
+    constructor(canvas) {
+        this.held = false;
+        this.edge = false;
+        this.mouseX = 0;
+        this.mouseY = 0;
+        this.canvas = canvas;
+        const updatePos = (clientX, clientY) => {
+            const rect = canvas.getBoundingClientRect();
+            // Considerar el escalado CSS del canvas (responsive)
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            this.mouseX = (clientX - rect.left) * scaleX;
+            this.mouseY = (clientY - rect.top) * scaleY;
+        };
+        const press = (e) => {
+            const t = e.touches ? e.touches[0] : e;
+            updatePos(t.clientX, t.clientY);
+            if (!this.held) this.edge = true;
+            this.held = true;
+            e.preventDefault();
+        };
+        const release = (e) => {
+            this.held = false;
+            if (e) e.preventDefault();
+        };
+        canvas.addEventListener('mousedown', press);
+        canvas.addEventListener('mouseup', release);
+        canvas.addEventListener('mouseleave', release);
+        canvas.addEventListener('mousemove', (e) => updatePos(e.clientX, e.clientY));
+        canvas.addEventListener('touchstart', press, { passive: false });
+        canvas.addEventListener('touchend', release, { passive: false });
+        canvas.addEventListener('touchmove', (e) => {
+            if (e.touches[0]) updatePos(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: false });
+    }
+    isHeld() { return this.held; }
+    jumpPressed() {
+        const v = this.edge;
+        this.edge = false;
+        return v;
+    }
+}
+
+// =================== AUDIO (DESHABILITADO POR CONSIGNA) =====
+// La consigna del proyecto especifica explícitamente "sin sonidos".
+// Mantenemos las clases con interfaces vacías para no romper las
+// llamadas existentes en el resto del código. Cero efectos sonoros.
+class AudioMgr {
+    jump()       {}
+    collect()    {}
+    pass()       {}
+    death()      {}
+    stageClear() {}
+    start()      {}
+    cheer()      {}
+}
+class MusicPlayer {
+    setBPM() {}
+    start()  {}
+    stop()   {}
+}
+
+// =================== PLAYER (Charlie + León) =================
+class Player {
+    constructor() { this.reset(); }
+    reset() {
+        this.worldX = 0;
+        this.y = GROUND_Y;
+        this.vy = 0;
+        this.onGround = true;
+        this.dead = false;
+        this.deathTimer = 0;
+        this.runAnim = 0;
+        this.animTimer = 0;
+        this.justLanded = false;
+        this.jumpCutAvailable = false;
+        // Power-up único: invencibilidad (estrella)
+        this.invincibleTimer = 0;
+    }
+    isInvincible() { return this.invincibleTimer > 0; }
+    grantInvincibility(seconds = 5) { this.invincibleTimer = seconds; }
+    superJump(velocity) {
+        this.vy = velocity;
+        this.onGround = false;
+        this.jumpCutAvailable = false;
+    }
+    update(dt, input, audio, runSpeed) {
+        this.justLanded = false;
+        // Decrementa timers de power-up
+        if (this.invincibleTimer > 0) this.invincibleTimer -= dt;
+        if (this.dead) {
+            this.deathTimer += dt;
+            this.vy += GRAVITY * dt;
+            this.y += this.vy * dt;
+            this.worldX -= 30 * dt;
+            return;
+        }
+        this.worldX += runSpeed * dt;
+
+        // ---- SALTO ----
+        if (input.jumpPressed() && this.onGround) {
+            this.vy = JUMP_VEL;
+            this.onGround = false;
+            this.jumpCutAvailable = true;
+            audio.jump();
+        }
+        // VARIABLE JUMP: si el jugador suelta el click mientras sube,
+        // se corta la velocidad → salto más corto (mejor control)
+        if (this.jumpCutAvailable && this.vy < 0 && !input.isHeld()) {
+            this.vy *= 0.4;
+            this.jumpCutAvailable = false;
+        }
+
+        // ---- GRAVEDAD ----
+        if (!this.onGround) {
+            this.vy += GRAVITY * dt;
+            this.y += this.vy * dt;
+            if (this.y >= GROUND_Y) {
+                this.y = GROUND_Y;
+                this.vy = 0;
+                this.onGround = true;
+                this.justLanded = true;   // ¡aterrizó! spawn dust en Game
+                this.jumpCutAvailable = false;
+            }
+        }
+        // Anim
+        this.animTimer += dt;
+        if (this.animTimer > 0.08) {
+            this.runAnim = 1 - this.runAnim;
+            this.animTimer = 0;
+        }
+    }
+    die(audio) {
+        if (this.dead) return;
+        this.dead = true;
+        this.vy = -260;
+        this.deathTimer = 0;
+        audio.death();
+    }
+    getWorldBounds() {
+        return {
+            left:   this.worldX - PL_COL_HALF_W,
+            right:  this.worldX + PL_COL_HALF_W,
+            top:    this.y - PL_COL_HEIGHT,
+            bottom: this.y
+        };
+    }
+}
+
+// =================== AROS DE FUEGO ===========================
+class FireHoop {
+    constructor(worldX, level = 0) {
+        this.worldX = worldX;
+        this.level = level;
+        // Y del centro del aro: 55 / 72 px sobre el suelo (más bajo = salto más chico basta)
+        this.centerY = GROUND_Y - (level === 0 ? 55 : 72);
+        this.processed = false;
+        this.hit = false;
+        this.flameTimer = 0;
+        this.flameFrame = 0;
+        this.flamePhase = Math.random() * Math.PI * 2;
+    }
+    update(dt) {
+        this.flameTimer += dt;
+        this.flamePhase += dt * 5;
+        if (this.flameTimer > 0.07) {
+            this.flameFrame = (this.flameFrame + 1) & 3;
+            this.flameTimer = 0;
+        }
+    }
+    // SOLO el rim INFERIOR del aro es letal (forgiveness).
+    getBottomRimCollision() {
+        return {
+            left:   this.worldX - HOOP_COL_HALF_W,
+            right:  this.worldX + HOOP_COL_HALF_W,
+            top:    this.centerY + HOOP_COL_HALF_H - HOOP_COL_RIM,
+            bottom: this.centerY + HOOP_COL_HALF_H
+        };
+    }
+    isXOverlapping(playerWorldX) {
+        return (playerWorldX + PL_COL_HALF_W >= this.worldX - HOOP_COL_HALF_W) &&
+               (playerWorldX - PL_COL_HALF_W <= this.worldX + HOOP_COL_HALF_W);
+    }
+    isPastPlayer(playerWorldX) {
+        return playerWorldX - PL_COL_HALF_W > this.worldX + HOOP_COL_HALF_W;
+    }
+}
+
+// =================== VALLAS (obstáculo del Stage 3) ==========
+// Vallas de madera tipo equitación: dos postes verticales + barra horizontal
+// con franjas rojas/azules. Charlie solo debe SALTAR por encima.
+class Hurdle {
+    constructor(worldX) {
+        this.worldX = worldX;
+        this.height = 42;            // altura de la valla
+        this.halfW  = 14;            // mitad del ancho de colisión
+        this.processed = false;
+        this.hit = false;
+    }
+    update(dt) {}
+    // Colisión: rectángulo desde el suelo hasta la altura de la valla
+    getCollision() {
+        return {
+            left:   this.worldX - this.halfW + 4,   // 4 px de forgiveness por lado
+            right:  this.worldX + this.halfW - 4,
+            top:    GROUND_Y - this.height + 8,     // forgiveness vertical
+            bottom: GROUND_Y
+        };
+    }
+}
+
+// =================== POWER-UP: ESTRELLA ======================
+// Único power-up: invencibilidad 5s. Atravesar obstáculos sin morir.
+class PowerUp {
+    constructor(worldX, y) {
+        this.worldX = worldX;
+        this.y = y;
+        this.collected = false;
+        this.bob = Math.random() * Math.PI * 2;
+        this.spin = 0;
+    }
+    update(dt) {
+        this.bob += dt * 3;
+        this.spin += dt * 5;
+    }
+    getWorldBounds() {
+        const y = this.y + Math.sin(this.bob) * 4;
+        return { left: this.worldX-18, right: this.worldX+18, top: y-18, bottom: y+18 };
+    }
+}
+
+// =================== TRAMPOLÍN (obstáculo amistoso) ==========
+// Cuando Charlie aterriza encima, lo lanza muy alto automáticamente
+class Trampoline {
+    constructor(worldX) {
+        this.worldX = worldX;
+        this.compress = 0;        // animación al rebotar
+    }
+    update(dt) {
+        if (this.compress > 0) this.compress = Math.max(0, this.compress - dt * 4);
+    }
+    // Caja de "contacto" — si Charlie toca esta zona en cualquier dirección, rebota
+    getZone() {
+        return { left: this.worldX-22, right: this.worldX+22, top: GROUND_Y-15, bottom: GROUND_Y };
+    }
+    bounce() { this.compress = 1; }
+}
+
+// =================== GLOBOS decorativos (touchables) =========
+class Balloon {
+    constructor(worldX, y, color) {
+        this.worldX = worldX;
+        this.baseY = y;            // posición original (no se mueve)
+        this.y = y;
+        this.color = color;
+        this.popped = false;
+        this.popTimer = 0;
+        this.bob = Math.random() * Math.PI * 2;
+    }
+    update(dt) {
+        if (this.popped) { this.popTimer += dt; return; }
+        this.bob += dt * 2;
+        // Bobea sutilmente pero no se va flotando
+        this.y = this.baseY + Math.sin(this.bob) * 4;
+    }
+    getWorldBounds() {
+        return { left: this.worldX-12, right: this.worldX+12, top: this.y-14, bottom: this.y+12 };
+    }
+}
+
+// =================== ÍTEMS (tazas de té con llama) ===========
+class Item {
+    constructor(worldX, y) {
+        this.worldX = worldX; this.y = y;
+        this.collected = false;
+        this.flameTimer = 0; this.flameFrame = 0;
+        this.bob = Math.random() * Math.PI * 2;
+    }
+    update(dt) {
+        this.flameTimer += dt;
+        if (this.flameTimer > 0.10) {
+            this.flameFrame = (this.flameFrame + 1) % 3;
+            this.flameTimer = 0;
+        }
+        this.bob += dt * 4;
+    }
+    getWorldBounds() {
+        return { left: this.worldX-12, right: this.worldX+12, top: this.y-16, bottom: this.y+8 };
+    }
+}
+
+// =================== PARTÍCULAS (juice / efectos) ============
+// Sistema simple de partículas con vida limitada. Se reciclan
+// dejándolas morir. Usadas para confeti, chispas, polvo, estrellas.
+class Particle {
+    constructor(x, y, vx, vy, color, life, size = 3, gravity = 200, shrink = false) {
+        this.x = x; this.y = y;
+        this.vx = vx; this.vy = vy;
+        this.color = color;
+        this.life = life;
+        this.maxLife = life;
+        this.size = size;
+        this.gravity = gravity;
+        this.shrink = shrink;
+    }
+    update(dt) {
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+        this.vy += this.gravity * dt;
+        this.life -= dt;
+    }
+    dead() { return this.life <= 0; }
+}
+
+class ParticleSystem {
+    constructor() { this.particles = []; }
+    add(p) { this.particles.push(p); }
+    clear() { this.particles = []; }
+    // Estallido de confeti al pasar un aro
+    confetti(x, y, count = 18) {
+        const colors = ['#ff44aa','#ffee00','#00e5ff','#33ff66','#ff8800','#ffffff'];
+        for (let i = 0; i < count; i++) {
+            const a = Math.random() * Math.PI * 2;
+            const s = 80 + Math.random() * 160;
+            this.add(new Particle(
+                x, y,
+                Math.cos(a) * s,
+                Math.sin(a) * s - 80,
+                colors[i % colors.length],
+                0.8 + Math.random() * 0.6,
+                3 + Math.floor(Math.random() * 3),
+                350
+            ));
+        }
+    }
+    // Chispas naranjas al cruzar fuego
+    sparks(x, y, count = 10) {
+        for (let i = 0; i < count; i++) {
+            const a = Math.random() * Math.PI * 2;
+            const s = 60 + Math.random() * 120;
+            this.add(new Particle(
+                x, y,
+                Math.cos(a) * s,
+                Math.sin(a) * s,
+                Math.random() < 0.5 ? '#ff8800' : '#ffee00',
+                0.4 + Math.random() * 0.3,
+                2 + Math.floor(Math.random() * 2),
+                100
+            ));
+        }
+    }
+    // Polvo al aterrizar
+    dust(x, y, count = 6) {
+        for (let i = 0; i < count; i++) {
+            const dir = i < count/2 ? -1 : 1;
+            this.add(new Particle(
+                x + dir * 8 + (Math.random()-0.5)*4, y,
+                dir * (40 + Math.random() * 60),
+                -20 - Math.random() * 40,
+                '#bbb',
+                0.4 + Math.random() * 0.2,
+                4 + Math.floor(Math.random() * 2),
+                100
+            ));
+        }
+    }
+    // Estrellas doradas al recoger taza
+    stars(x, y, count = 8) {
+        for (let i = 0; i < count; i++) {
+            const a = -Math.PI/2 + (Math.random() - 0.5) * Math.PI;
+            const s = 80 + Math.random() * 60;
+            this.add(new Particle(
+                x, y,
+                Math.cos(a) * s,
+                Math.sin(a) * s,
+                Math.random() < 0.5 ? '#ffee00' : '#ffffff',
+                0.5 + Math.random() * 0.3,
+                3, 200
+            ));
+        }
+    }
+    // Explosión al morir
+    deathBurst(x, y) {
+        for (let i = 0; i < 25; i++) {
+            const a = Math.random() * Math.PI * 2;
+            const s = 80 + Math.random() * 200;
+            this.add(new Particle(
+                x, y,
+                Math.cos(a) * s,
+                Math.sin(a) * s - 100,
+                Math.random() < 0.5 ? '#ff0000' : '#ffee00',
+                0.8 + Math.random() * 0.5,
+                4, 400
+            ));
+        }
+    }
+    // Burst de combo (estrellas amarillas grandes)
+    comboBurst(x, y) {
+        for (let i = 0; i < 16; i++) {
+            const a = Math.random() * Math.PI * 2;
+            const s = 100 + Math.random() * 100;
+            this.add(new Particle(
+                x, y,
+                Math.cos(a) * s, Math.sin(a) * s,
+                '#ffee00',
+                0.7, 5, 100
+            ));
+        }
+    }
+    update(dt) {
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            this.particles[i].update(dt);
+            if (this.particles[i].dead()) this.particles.splice(i, 1);
+        }
+    }
+    draw(ctx, camera) {
+        for (const p of this.particles) {
+            const sx = p.x - camera;
+            if (sx < -20 || sx > W + 20) continue;
+            const alpha = Math.min(1, p.life / p.maxLife * 1.5);
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = p.color;
+            ctx.fillRect(sx - p.size/2, p.y - p.size/2, p.size, p.size);
+        }
+        ctx.globalAlpha = 1;
+    }
+}
+
+// =================== EFECTOS DE PANTALLA =====================
+// Maneja screen shake, flash de color, y slow-motion. Estados con timer.
+class Effects {
+    constructor() {
+        this.shakeT = 0;
+        this.shakeI = 0;
+        this.flashT = 0;
+        this.flashMax = 0;
+        this.flashColor = '#fff';
+        this.slowMoT = 0;
+    }
+    update(dt) {
+        if (this.shakeT > 0) this.shakeT -= dt;
+        if (this.flashT > 0) this.flashT -= dt;
+        if (this.slowMoT > 0) this.slowMoT -= dt;
+    }
+    shake(dur, intensity) {
+        this.shakeT = dur;
+        this.shakeI = intensity;
+    }
+    flash(dur, color) {
+        this.flashT = dur;
+        this.flashMax = dur;
+        this.flashColor = color;
+    }
+    slowMo(dur) { this.slowMoT = dur; }
+    isSlow() { return this.slowMoT > 0; }
+    getSlowFactor() { return this.slowMoT > 0 ? 0.35 : 1.0; }
+    getShake() {
+        if (this.shakeT <= 0) return { x: 0, y: 0 };
+        return {
+            x: (Math.random() - 0.5) * this.shakeI * 2,
+            y: (Math.random() - 0.5) * this.shakeI * 2
+        };
+    }
+    drawFlash(ctx) {
+        if (this.flashT <= 0) return;
+        const a = (this.flashT / this.flashMax) * 0.6;
+        ctx.globalAlpha = a;
+        ctx.fillStyle = this.flashColor;
+        ctx.fillRect(0, 0, W, H);
+        ctx.globalAlpha = 1;
+    }
+}
+
+// =================== STAGE (NIVEL) ===========================
+class Stage {
+    constructor(num) {
+        this.num = num;
+        this.hoops = [];
+        this.hurdles = [];
+        this.trampolines = [];        // ¡Saltos automáticos!
+        this.powerups = [];           // Estrellas y cristales slow-mo
+        this.balloons = [];           // Globos decorativos (touchables = +50)
+        this.items = [];
+        this.length = STAGE_LENGTH_PX;
+        this.generate();
+    }
+    generate() {
+        const startX = 700;
+        let x = startX;
+        // La zona normal termina antes del climax. Reservamos:
+        //   ~600 px para el climax (3 obstáculos rápidos)
+        //   ~200 px para acercarse a la meta
+        const normalEnd = this.length - 800;
+
+        // ----- ZONA NORMAL (genera obstáculos según el nivel) -----
+        if (this.num === 1) {
+            const minSpacing = 400, spreadSpacing = 140;
+            while (x < normalEnd) {
+                this.hoops.push(new FireHoop(x, 0));
+                if (Math.random() < 0.75) {
+                    const itemY = Math.random() < 0.5 ? GROUND_Y - 25 : GROUND_Y - 90;
+                    this.items.push(new Item(x + 160, itemY));
+                }
+                x += minSpacing + Math.random() * spreadSpacing;
+            }
+        }
+        else if (this.num === 2) {
+            const minSpacing = 320, spreadSpacing = 120;
+            while (x < normalEnd) {
+                this.hurdles.push(new Hurdle(x));
+                if (Math.random() < 0.65) {
+                    this.items.push(new Item(x + 140, GROUND_Y - 25));
+                }
+                x += minSpacing + Math.random() * spreadSpacing;
+            }
+        }
+        else if (this.num === 3) {
+            const minSpacing = 320, spreadSpacing = 100;
+            let lastWasHoop = false;
+            while (x < normalEnd) {
+                const useHoop = Math.random() < (lastWasHoop ? 0.35 : 0.7);
+                if (useHoop) {
+                    const level = Math.random() < 0.3 ? 1 : 0;
+                    this.hoops.push(new FireHoop(x, level));
+                    lastWasHoop = true;
+                } else {
+                    this.hurdles.push(new Hurdle(x));
+                    lastWasHoop = false;
+                }
+                if (Math.random() < 0.7) {
+                    const itemY = Math.random() < 0.5 ? GROUND_Y - 25 : GROUND_Y - 90;
+                    this.items.push(new Item(x + 130, itemY));
+                }
+                x += minSpacing + Math.random() * spreadSpacing;
+            }
+        }
+
+        // ----- POWER-UP estrella (SOLO 1 por nivel) -----
+        // Más estratégico: tenés que decidir cuándo usarlo
+        const puX = 1000 + Math.random() * (normalEnd - 1500);
+        this.powerups.push(new PowerUp(puX, GROUND_Y - 60 - Math.random() * 25));
+
+        // ----- TRAMPOLINES (1-2 en stage 2 y 3) -----
+        if (this.num >= 2) {
+            const numTramps = this.num === 2 ? 1 : 2;
+            for (let i = 0; i < numTramps; i++) {
+                const tx = 1200 + i * 800 + Math.random() * 200;
+                if (tx < normalEnd - 200) this.trampolines.push(new Trampoline(tx));
+            }
+        }
+
+        // (globos eliminados — no aportaban gameplay, solo ruido visual)
+
+        // ===== CLIMAX FINAL (mini-boss): 3 obstáculos en rapid-fire =====
+        // Cada nivel tiene su tipo de boss:
+        //   1: Domador (3 aros, uno alto al medio)
+        //   2: Caballo bravo (3 vallas)
+        //   3: Maestro de Ceremonias (aro, valla, aro alto)
+        // Spacing 180 px → ~1s entre obstáculos (sensación de urgencia)
+        let bx = normalEnd + 100;
+        if (this.num === 1) {
+            this.hoops.push(new FireHoop(bx, 0));         bx += 180;
+            this.hoops.push(new FireHoop(bx, 1));         bx += 180;
+            this.hoops.push(new FireHoop(bx, 0));
+        } else if (this.num === 2) {
+            this.hurdles.push(new Hurdle(bx));            bx += 180;
+            this.hurdles.push(new Hurdle(bx));            bx += 180;
+            this.hurdles.push(new Hurdle(bx));
+        } else if (this.num === 3) {
+            this.hoops.push(new FireHoop(bx, 0));         bx += 180;
+            this.hurdles.push(new Hurdle(bx));            bx += 180;
+            this.hoops.push(new FireHoop(bx, 1));
+        }
+        // Marcamos dónde empieza el climax (para mostrar anuncio)
+        this.climaxStartX = normalEnd + 50;
+    }
+    update(dt) {
+        for (const h of this.hoops)   h.update(dt);
+        for (const h of this.hurdles) h.update(dt);
+        for (const t of this.trampolines) t.update(dt);
+        for (const p of this.powerups) p.update(dt);
+        for (const b of this.balloons) b.update(dt);
+        for (const it of this.items)  it.update(dt);
+    }
+}
+
+// =================== HELPERS DE COLISIÓN =====================
+function aabbOverlap(a, b) {
+    return a.left < b.right && a.right > b.left &&
+           a.top  < b.bottom && a.bottom > b.top;
+}
+
+// =================== RENDERER ================================
+class Renderer {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.ctx.imageSmoothingEnabled = false;
+        // ---- SEEDS PARA ELEMENTOS AMBIENTALES ----
+        // Paleta SATURADA estilo NES (vibrante sobre fondo negro)
+        const audColors = ['#ff2266','#00ddff','#ffee00','#33ee44','#ff8833','#ffffff','#dd1111','#aa44ee','#88ccff','#ff5577','#22ddbb','#ee44cc'];
+        const skinColors = ['#ffcc99','#dd9966','#aa6633','#cc8855'];
+        this.audienceSeed = [];
+        for (let i = 0; i < 160; i++) {
+            const row = Math.floor(Math.random() * 4);
+            this.audienceSeed.push({
+                wx: Math.random() * 2400,
+                row: row,
+                shirt: audColors[Math.floor(Math.random() * audColors.length)],
+                skin: skinColors[Math.floor(Math.random() * skinColors.length)],
+                hairCol: audColors[Math.floor(Math.random() * audColors.length)],
+                hasHat: Math.random() < (row < 2 ? 0.35 : 0.15),
+                phase: Math.random() * Math.PI * 2,
+            });
+        }
+        // Estrellas titilantes en el cielo
+        this.starSeed = [];
+        for (let i = 0; i < 50; i++) {
+            this.starSeed.push({
+                x: Math.random() * W,
+                y: Math.random() * 75,
+                phase: Math.random() * Math.PI * 2,
+                size: Math.random() < 0.7 ? 1 : 2
+            });
+        }
+        // Confeti ambiental flotando muy sutil
+        this.ambientConfetti = [];
+        for (let i = 0; i < 30; i++) {
+            this.ambientConfetti.push({
+                x: Math.random() * W,
+                y: Math.random() * H,
+                vx: -10 - Math.random() * 20,
+                vy: 15 + Math.random() * 20,
+                color: audColors[Math.floor(Math.random() * audColors.length)],
+                phase: Math.random() * Math.PI * 2
+            });
+        }
+    }
+    clear(color = '#000') { this.ctx.fillStyle = color; this.ctx.fillRect(0, 0, W, H); }
+
+    // -------------------------------------------------------
+    //   PÚBLICO en las tribunas (200+ pixels con bob animado)
+    // -------------------------------------------------------
+    drawAudience(camera, time) {
+        const ctx = this.ctx;
+        // 4 filas (en vez de 5) con perspectiva descendente
+        const rowYs = [92, 118, 148, 182];
+        const rowScales = [0.9, 1.0, 1.1, 1.2];
+        // Las filas de adelante tapan a las de atrás → ordenamos por row asc
+        const sorted = [...this.audienceSeed].sort((a, b) => a.row - b.row);
+
+        for (const a of sorted) {
+            let sx = a.wx - (camera * 0.15) % 2400;
+            if (sx < -20) sx += 2400;
+            if (sx > W + 20) continue;
+            const y = rowYs[a.row];
+            const scale = rowScales[a.row];
+            // OLA MEXICANA viaja lateralmente (dependiente de x)
+            const wavePhase = sx * 0.012 - time * 2.5;
+            const waveAmt = Math.max(0, Math.sin(wavePhase) * 8) * scale;
+
+            // Dimensiones escaladas
+            const headW = Math.round(8 * scale);
+            const headH = Math.round(6 * scale);
+            const torsoW = headW;
+            const torsoH = Math.round(8 * scale);
+
+            // ---- CABEZA ----
+            ctx.fillStyle = a.skin;
+            ctx.fillRect(sx, y - waveAmt, headW, headH);
+            // Pelo
+            ctx.fillStyle = a.hairCol;
+            ctx.fillRect(sx, y - Math.round(3 * scale) - waveAmt, headW, Math.round(3 * scale));
+            // Sombrero
+            if (a.hasHat) {
+                ctx.fillStyle = a.shirt;
+                ctx.fillRect(sx - 1, y - Math.round(5 * scale) - waveAmt, headW + 2, 2);
+                ctx.fillRect(sx + 1, y - Math.round(8 * scale) - waveAmt, headW - 2, Math.round(3 * scale));
+            }
+            // Ojos
+            ctx.fillStyle = '#000';
+            ctx.fillRect(sx + Math.round(2 * scale), y + 1 - waveAmt, 1, 2);
+            ctx.fillRect(sx + Math.round(5 * scale), y + 1 - waveAmt, 1, 2);
+            // Sonrisa
+            ctx.fillStyle = '#aa0033';
+            ctx.fillRect(sx + Math.round(3 * scale), y + Math.round(4 * scale) - waveAmt, 2, 1);
+
+            // ---- TORSO ----
+            ctx.fillStyle = a.shirt;
+            ctx.fillRect(sx, y + headH - waveAmt, torsoW, torsoH);
+            // Línea de sombra en hombros
+            ctx.fillStyle = '#000';
+            ctx.globalAlpha = 0.25;
+            ctx.fillRect(sx, y + headH - waveAmt, torsoW, 1);
+            ctx.globalAlpha = 1;
+
+            // ---- BRAZOS LEVANTADOS durante la ola ----
+            if (waveAmt > 2.5 * scale) {
+                ctx.fillStyle = a.skin;
+                const armW = Math.max(2, Math.round(3 * scale));
+                // Brazo izq (3 segmentos curvados)
+                ctx.fillRect(sx - 3, y + Math.round(4 * scale) - waveAmt, armW, Math.round(4 * scale));
+                ctx.fillRect(sx - 4, y + 0 - waveAmt, armW, Math.round(4 * scale));
+                ctx.fillRect(sx - 5, y - Math.round(4 * scale) - waveAmt, armW, Math.round(4 * scale));
+                // Brazo der
+                ctx.fillRect(sx + torsoW, y + Math.round(4 * scale) - waveAmt, armW, Math.round(4 * scale));
+                ctx.fillRect(sx + torsoW + 1, y + 0 - waveAmt, armW, Math.round(4 * scale));
+                ctx.fillRect(sx + torsoW + 2, y - Math.round(4 * scale) - waveAmt, armW, Math.round(4 * scale));
+            }
+        }
+
+        // Barandilla decorativa que separa público del escenario
+        ctx.fillStyle = '#444';
+        ctx.fillRect(0, 210, W, 2);
+        ctx.fillStyle = '#888';
+        ctx.fillRect(0, 212, W, 1);
+    }
+    // -------------------------------------------------------
+    //   REFLECTORES desde arriba (cones de luz que barren)
+    // -------------------------------------------------------
+    drawSpotlights(time) {
+        const ctx = this.ctx;
+        const lights = [
+            { srcX: 140, baseTarget: 200 },
+            { srcX: W/2, baseTarget: W/2 },
+            { srcX: W - 140, baseTarget: W - 200 }
+        ];
+        for (let i = 0; i < lights.length; i++) {
+            const l = lights[i];
+            const sweep = Math.sin(time * 0.6 + i * 1.3) * 80;
+            const targetX = l.baseTarget + sweep;
+            // Cono de luz MÁS SUTIL (0.10 vs 0.18 antes)
+            ctx.save();
+            const grad = ctx.createLinearGradient(l.srcX, 75, targetX, GROUND_Y);
+            grad.addColorStop(0, 'rgba(255,255,200,0.10)');
+            grad.addColorStop(1, 'rgba(255,255,200,0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.moveTo(l.srcX - 10, 75);
+            ctx.lineTo(l.srcX + 10, 75);
+            ctx.lineTo(targetX + 80, GROUND_Y);
+            ctx.lineTo(targetX - 80, GROUND_Y);
+            ctx.closePath();
+            ctx.fill();
+            // Punto brillante del foco
+            ctx.fillStyle = '#ffeeaa';
+            ctx.fillRect(l.srcX - 3, 73, 6, 4);
+            ctx.restore();
+        }
+    }
+    // -------------------------------------------------------
+    //   ESTRELLAS en el cielo (titilan)
+    // -------------------------------------------------------
+    drawStars(time) {
+        const ctx = this.ctx;
+        for (const s of this.starSeed) {
+            const twinkle = (Math.sin(time * 3 + s.phase) + 1) / 2;
+            ctx.globalAlpha = 0.25 + twinkle * 0.5;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(s.x, s.y, s.size, s.size);
+        }
+        ctx.globalAlpha = 1;
+    }
+    // -------------------------------------------------------
+    //   CONFETI AMBIENTAL flotante muy sutil
+    // -------------------------------------------------------
+    drawAmbientConfetti(dt, time) {
+        const ctx = this.ctx;
+        for (const c of this.ambientConfetti) {
+            c.x += c.vx * dt;
+            c.y += c.vy * dt;
+            c.x += Math.sin(time + c.phase) * 0.3;
+            if (c.y > H) { c.y = -10; c.x = Math.random() * W; }
+            if (c.x < -10) c.x = W + 10;
+            ctx.globalAlpha = 0.35;
+            ctx.fillStyle = c.color;
+            ctx.fillRect(c.x, c.y, 3, 3);
+        }
+        ctx.globalAlpha = 1;
+    }
+
+    // -------------------------------------------------------
+    //   FONDO DEL CIRCO
+    // -------------------------------------------------------
+    drawBackground(camera, stageNum, time, dt) {
+        const ctx = this.ctx;
+        // CIELO PURO NEGRO (estilo arcade original NES)
+        // Pequeños tintes solo en stages 2 y 3 para diferenciar
+        let skyCol = '#000000';
+        let groundTop = '#22aa22', groundBot = '#106610';
+        if (stageNum === 2) {
+            // Atardecer: piso naranja, cielo casi negro con leve calor
+            skyCol = '#0a0000';
+            groundTop = '#dd6622'; groundBot = '#883310';
+        } else if (stageNum === 3) {
+            // Noche: piso violeta profundo, cielo negro puro
+            skyCol = '#000010';
+            groundTop = '#5533aa'; groundBot = '#220e55';
+        }
+        ctx.fillStyle = skyCol;
+        ctx.fillRect(0, 0, W, GROUND_Y);
+
+        // ESTRELLAS solo en stage 2 (de noche) y stage 1 (cielo de circo)
+        if (stageNum !== 3) this.drawStars(time);
+
+        // Carpa decorativa
+        this.drawCarpa(camera);
+        // Festones
+        this.drawFestoons(camera);
+        // Público en las tribunas
+        this.drawAudience(camera, time);
+        // Entrada de carpa con acróbata performando
+        this.drawTentEntrance(camera, time);
+        // Reflectores (más sutiles ahora)
+        this.drawSpotlights(time);
+
+        // SUELO con gradiente
+        const grGrad = ctx.createLinearGradient(0, GROUND_Y, 0, H);
+        grGrad.addColorStop(0, groundTop);
+        grGrad.addColorStop(1, groundBot);
+        ctx.fillStyle = grGrad;
+        ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
+
+        // ★ LÍNEAS AMARILLAS BRILLANTES (icónicas del Circus Charlie original)
+        ctx.fillStyle = '#ffee00';
+        for (let i = 0; i < 5; i++) {
+            ctx.fillRect(0, GROUND_Y + 8 + i * 13, W, 3);
+        }
+        // Borde superior del piso
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, GROUND_Y - 2, W, 2);
+
+        // VIÑETA sutil — oscurece esquinas para enfocar al centro
+        const vignette = ctx.createRadialGradient(W/2, H/2, W * 0.35, W/2, H/2, W * 0.7);
+        vignette.addColorStop(0, 'rgba(0,0,0,0)');
+        vignette.addColorStop(1, 'rgba(0,0,0,0.45)');
+        ctx.fillStyle = vignette;
+        ctx.fillRect(0, 0, W, GROUND_Y);
+    }
+    drawCarpa(camera) {
+        const ctx = this.ctx;
+        const carpaY = 30, carpaH = 40;
+        ctx.fillStyle = '#220000';
+        ctx.fillRect(0, carpaY, W, carpaH);
+        const pw = 24, ph = 20;
+        const cols = [COL.carpaOrange, COL.carpaRed, COL.carpaWhite];
+        const offset = (camera * 0.2) % pw;
+        for (let row = 0; row < 2; row++) {
+            const yC = carpaY + 10 + row * ph;
+            const shift = (row === 1) ? pw / 2 : 0;
+            for (let i = -pw; i < W + pw; i += pw) {
+                const cIdx = Math.floor((i + offset + camera*0.2) / pw + row*3) % cols.length;
+                const ci = ((cIdx % cols.length) + cols.length) % cols.length;
+                ctx.fillStyle = cols[ci];
+                const cx = i - offset + shift + pw/2;
+                ctx.beginPath();
+                ctx.moveTo(cx, yC - 6); ctx.lineTo(cx + 6, yC);
+                ctx.lineTo(cx, yC + 6); ctx.lineTo(cx - 6, yC);
+                ctx.closePath(); ctx.fill();
+            }
+        }
+        ctx.fillStyle = COL.carpaBorder;
+        ctx.fillRect(0, carpaY, W, 4);
+        ctx.fillRect(0, carpaY + carpaH - 4, W, 4);
+    }
+    drawFestoons(camera) {
+        const ctx = this.ctx;
+        // BANDERINES TRIANGULARES estilo carpa de circo NES original
+        // Cuerda horizontal de la que cuelgan triángulos alternando colores
+        const fy = 76, fw = 26, fh = 22;
+        const colors = ['#ff2266', '#ffee00', '#00ddff', '#33ee44', '#ff8800', '#ffffff'];
+        const offset = (camera * 0.25) % fw;
+        // Cuerda dorada
+        ctx.fillStyle = '#ffaa00';
+        ctx.fillRect(0, fy - 2, W, 2);
+
+        for (let i = -fw; i < W + fw; i += fw) {
+            const x = i - offset;
+            const cIdx = Math.floor((x + offset + camera*0.25 + 999*fw) / fw) % colors.length;
+            const ci = ((cIdx % colors.length) + colors.length) % colors.length;
+            ctx.fillStyle = colors[ci];
+            // TRIÁNGULO apuntando hacia abajo
+            ctx.beginPath();
+            ctx.moveTo(x + 2, fy);
+            ctx.lineTo(x + fw - 2, fy);
+            ctx.lineTo(x + fw/2, fy + fh);
+            ctx.closePath();
+            ctx.fill();
+            // Línea más oscura del lado derecho (volumen pixel-art)
+            ctx.fillStyle = '#000';
+            ctx.globalAlpha = 0.25;
+            ctx.beginPath();
+            ctx.moveTo(x + fw/2, fy + fh);
+            ctx.lineTo(x + fw - 2, fy);
+            ctx.lineTo(x + fw - 4, fy);
+            ctx.closePath();
+            ctx.fill();
+            ctx.globalAlpha = 1;
+        }
+    }
+    drawTentEntrance(camera, time) {
+        const ctx = this.ctx;
+        const period = 1400;
+        const px = (-camera * 0.35 + 80) % period;
+        const tx = px < 0 ? px + period : px;
+        if (tx > W + 200) return;
+        const tentX = tx, tentTop = 120, tentH = 230, tentW = 140;
+        ctx.fillStyle = COL.tentDark;
+        ctx.fillRect(tentX - tentW/2, tentTop, tentW, tentH);
+        ctx.fillStyle = COL.tentRed;
+        ctx.fillRect(tentX - tentW/2, tentTop, 22, tentH);
+        ctx.fillRect(tentX + tentW/2 - 22, tentTop, 22, tentH);
+        ctx.fillStyle = '#660000';
+        for (let i = 0; i < 3; i++) {
+            ctx.fillRect(tentX - tentW/2 + 3 + i*7, tentTop, 2, tentH);
+            ctx.fillRect(tentX + tentW/2 - 22 + 3 + i*7, tentTop, 2, tentH);
+        }
+        ctx.fillStyle = COL.tentRed;
+        ctx.beginPath(); ctx.arc(tentX, tentTop, tentW/2, Math.PI, 0); ctx.fill();
+        ctx.strokeStyle = COL.carpaWhite; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(tentX, tentTop, tentW/2, Math.PI, 0); ctx.stroke();
+        ctx.fillStyle = COL.tentPole;
+        ctx.fillRect(tentX - 2, tentTop - 30, 4, 30);
+        ctx.fillStyle = COL.carpaWhite;
+        ctx.beginPath();
+        ctx.moveTo(tentX, tentTop - 30); ctx.lineTo(tentX + 14, tentTop - 25);
+        ctx.lineTo(tentX, tentTop - 20); ctx.closePath(); ctx.fill();
+        // ACRÓBATA en la entrada (en vez del elefante)
+        // Alternamos entre malabarista y equilibrista según posición fija del mundo
+        // (así son consistentes cada vez que pasa la misma carpa)
+        const performerType = Math.floor((tentX + camera * 0.35) / period);
+        if (performerType % 2 === 0) {
+            this.drawTentJuggler(tentX, tentTop + tentH - 30, time);
+        } else {
+            this.drawTentTightrope(tentX, tentTop + tentH - 30, time);
+        }
+    }
+
+    // Versión compacta del malabarista para dentro de la carpa
+    drawTentJuggler(x, baseY, time) {
+        const ctx = this.ctx;
+        // Piernas (pantalón rayado vertical rojo/blanco)
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x - 5, baseY - 18, 10, 18);
+        ctx.fillStyle = '#cc1010';
+        ctx.fillRect(x - 4, baseY - 18, 2, 18);
+        ctx.fillRect(x, baseY - 18, 2, 18);
+        ctx.fillRect(x + 4, baseY - 18, 1, 18);
+        // Pies oscuros
+        ctx.fillStyle = '#000';
+        ctx.fillRect(x - 5, baseY - 2, 4, 2);
+        ctx.fillRect(x + 2, baseY - 2, 4, 2);
+        // Cuerpo (chaleco azul con botones dorados)
+        ctx.fillStyle = '#0066cc';
+        ctx.fillRect(x - 6, baseY - 28, 12, 12);
+        ctx.fillStyle = '#ffee00';
+        ctx.fillRect(x - 1, baseY - 25, 2, 2);
+        ctx.fillRect(x - 1, baseY - 21, 2, 2);
+        // Pajarita amarilla
+        ctx.fillStyle = '#ffee00';
+        ctx.fillRect(x - 3, baseY - 29, 6, 2);
+        // Brazos arriba (manos juntas para malabarear)
+        ctx.fillStyle = '#0066cc';
+        ctx.fillRect(x - 9, baseY - 28, 3, 8);
+        ctx.fillRect(x + 6, baseY - 28, 3, 8);
+        // Cabeza (skin)
+        ctx.fillStyle = '#ffcc99';
+        ctx.fillRect(x - 4, baseY - 36, 8, 8);
+        // Bigote frondoso
+        ctx.fillStyle = '#553311';
+        ctx.fillRect(x - 3, baseY - 30, 6, 2);
+        // Ojos
+        ctx.fillStyle = '#000';
+        ctx.fillRect(x - 2, baseY - 33, 1, 2);
+        ctx.fillRect(x + 1, baseY - 33, 1, 2);
+        // Sombrero de copa
+        ctx.fillStyle = '#000';
+        ctx.fillRect(x - 5, baseY - 39, 10, 2);
+        ctx.fillRect(x - 4, baseY - 45, 8, 6);
+        ctx.fillStyle = '#cc1010';
+        ctx.fillRect(x - 4, baseY - 42, 8, 1);
+
+        // 3 BOLAS rotando en órbita (¡malabares!)
+        const ballColors = ['#ff44aa', '#00d4ff', '#ffee00'];
+        for (let i = 0; i < 3; i++) {
+            const angle = time * 3.5 + i * (Math.PI * 2 / 3);
+            const bx = x + Math.cos(angle) * 14;
+            const by = baseY - 42 + Math.abs(Math.sin(angle)) * -10;
+            ctx.fillStyle = ballColors[i];
+            ctx.fillRect(bx - 3, by - 3, 6, 6);
+            // Brillo blanco
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(bx - 2, by - 2, 2, 2);
+        }
+    }
+
+    // Versión compacta del equilibrista para dentro de la carpa
+    drawTentTightrope(x, baseY, time) {
+        const ctx = this.ctx;
+        // Pequeña cuerda corta debajo de sus pies
+        ctx.fillStyle = '#aa8800';
+        ctx.fillRect(x - 35, baseY, 70, 2);
+        // Sway senoidal
+        const sway = Math.sin(time * 1.5) * 4;
+        const ax = x + sway;
+        // Piernas (uniforme cyan)
+        ctx.fillStyle = '#00aaff';
+        ctx.fillRect(ax - 3, baseY - 16, 2, 16);
+        ctx.fillRect(ax + 1, baseY - 16, 2, 16);
+        // Pies sobre la cuerda
+        ctx.fillStyle = '#aa3300';
+        ctx.fillRect(ax - 4, baseY - 2, 3, 2);
+        ctx.fillRect(ax + 1, baseY - 2, 3, 2);
+        // Cuerpo (leotardo amarillo)
+        ctx.fillStyle = '#ffee00';
+        ctx.fillRect(ax - 4, baseY - 28, 8, 12);
+        // Volado blanco
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(ax - 5, baseY - 18, 10, 1);
+        // Cara skin
+        ctx.fillStyle = '#ffcc99';
+        ctx.fillRect(ax - 3, baseY - 35, 6, 7);
+        // Pelo rosa
+        ctx.fillStyle = '#ff44aa';
+        ctx.fillRect(ax - 4, baseY - 39, 8, 4);
+        ctx.fillRect(ax - 3, baseY - 35, 6, 1);
+        // Ojos
+        ctx.fillStyle = '#000';
+        ctx.fillRect(ax - 2, baseY - 32, 1, 2);
+        ctx.fillRect(ax + 1, baseY - 32, 1, 2);
+        // Sonrisa
+        ctx.fillStyle = '#aa0033';
+        ctx.fillRect(ax - 1, baseY - 30, 2, 1);
+        // Pértiga de balance horizontal con inclinación opuesta al sway
+        const tilt = -sway * 0.4;
+        ctx.fillStyle = '#222';
+        ctx.fillRect(ax - 28, baseY - 23 + tilt, 56, 2);
+        // Pesos rojos en los extremos
+        ctx.fillStyle = '#cc1010';
+        ctx.fillRect(ax - 32, baseY - 26 + tilt, 6, 6);
+        ctx.fillRect(ax + 26, baseY - 26 - tilt, 6, 6);
+        // Brillito amarillo
+        ctx.fillStyle = '#ffee00';
+        ctx.fillRect(ax - 31, baseY - 25 + tilt, 1, 1);
+        ctx.fillRect(ax + 27, baseY - 25 - tilt, 1, 1);
+    }
+    // -------------------------------------------------------
+    //   ACRÓBATAS DE FONDO (en la tribuna, con parallax)
+    // -------------------------------------------------------
+    drawBackgroundPerformers(camera, time, stageNum) {
+        const ctx = this.ctx;
+        // POSICIÓN: justo debajo de la barandilla de la tribuna (y=222)
+        // y arriba de los obstáculos (que empiezan en y~300)
+        if (stageNum !== 2) {
+            const period = 1800;
+            const px = (-camera * 0.45 + 400) % period;
+            const tx = px < 0 ? px + period : px;
+            if (tx < W + 100) this.drawTightrope(tx, 268, time);
+        }
+        const periodJ = 1500;
+        const pxJ = (-camera * 0.45 + 1100) % periodJ;
+        const txJ = pxJ < 0 ? pxJ + periodJ : pxJ;
+        if (txJ < W + 80) this.drawJuggler(txJ, 272, time);
+    }
+    drawTightrope(x, baseY, time) {
+        const ctx = this.ctx;
+        // Cuerda extendida con postes a los costados
+        ctx.fillStyle = '#aa8800';
+        ctx.fillRect(x - 90, baseY, 180, 2);
+        // Postes laterales con sombra
+        ctx.fillStyle = '#553300';
+        ctx.fillRect(x - 92, baseY - 4, 4, 22);
+        ctx.fillRect(x + 88, baseY - 4, 4, 22);
+        // Borla decorativa en los postes
+        ctx.fillStyle = '#ff44aa';
+        ctx.fillRect(x - 94, baseY - 6, 8, 4);
+        ctx.fillRect(x + 86, baseY - 6, 8, 4);
+
+        // Acróbata balanceándose (sway senoidal)
+        const sway = Math.sin(time * 1.5) * 5;
+        const ax = x + sway;
+
+        // Piernas (uniforme cyan)
+        ctx.fillStyle = '#00aaff';
+        ctx.fillRect(ax - 3, baseY - 16, 2, 16);
+        ctx.fillRect(ax + 1, baseY - 16, 2, 16);
+        // Pies sobre la cuerda
+        ctx.fillStyle = '#aa3300';
+        ctx.fillRect(ax - 4, baseY - 2, 3, 2);
+        ctx.fillRect(ax + 1, baseY - 2, 3, 2);
+        // Cuerpo (leotardo amarillo)
+        ctx.fillStyle = '#ffee00';
+        ctx.fillRect(ax - 4, baseY - 28, 8, 12);
+        // Volado del leotardo (zigzag)
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(ax - 5, baseY - 18, 10, 1);
+        // Cara (skin)
+        ctx.fillStyle = '#ffcc99';
+        ctx.fillRect(ax - 3, baseY - 35, 6, 7);
+        // Pelo rosa con flequillo
+        ctx.fillStyle = '#ff44aa';
+        ctx.fillRect(ax - 4, baseY - 39, 8, 4);
+        ctx.fillRect(ax - 3, baseY - 35, 6, 1);
+        // Ojos
+        ctx.fillStyle = '#000';
+        ctx.fillRect(ax - 2, baseY - 32, 1, 2);
+        ctx.fillRect(ax + 1, baseY - 32, 1, 2);
+        // Sonrisa
+        ctx.fillStyle = '#aa0033';
+        ctx.fillRect(ax - 1, baseY - 30, 2, 1);
+
+        // Pertiga de balance horizontal con inclinación opuesta al sway
+        const tilt = -sway * 0.4;
+        ctx.fillStyle = '#222';
+        ctx.fillRect(ax - 32, baseY - 23 + tilt, 64, 2);
+        // Pesos rojos en los extremos
+        ctx.fillStyle = '#cc1010';
+        ctx.fillRect(ax - 36, baseY - 26 + tilt, 6, 6);
+        ctx.fillRect(ax + 30, baseY - 26 - tilt, 6, 6);
+        // Brillito amarillo en los pesos
+        ctx.fillStyle = '#ffee00';
+        ctx.fillRect(ax - 35, baseY - 25 + tilt, 1, 1);
+        ctx.fillRect(ax + 31, baseY - 25 - tilt, 1, 1);
+    }
+    drawJuggler(x, baseY, time) {
+        const ctx = this.ctx;
+        // Pedestal/banquito
+        ctx.fillStyle = '#aa1144';
+        ctx.fillRect(x - 14, baseY + 24, 28, 8);
+        ctx.fillStyle = '#ffee00';
+        ctx.fillRect(x - 14, baseY + 22, 28, 2);
+        ctx.fillStyle = '#660022';
+        ctx.fillRect(x - 14, baseY + 32, 28, 2);
+
+        // Piernas (pantalón rayado vertical rojo/blanco)
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x - 5, baseY + 4, 10, 18);
+        ctx.fillStyle = '#cc1010';
+        ctx.fillRect(x - 4, baseY + 4, 2, 18);
+        ctx.fillRect(x, baseY + 4, 2, 18);
+        ctx.fillRect(x + 4, baseY + 4, 1, 18);
+
+        // Cuerpo (chaleco azul con botones)
+        ctx.fillStyle = '#0066cc';
+        ctx.fillRect(x - 6, baseY - 6, 12, 12);
+        ctx.fillStyle = '#ffee00';
+        ctx.fillRect(x - 1, baseY - 3, 2, 2);
+        ctx.fillRect(x - 1, baseY + 1, 2, 2);
+        // Pajarita amarilla
+        ctx.fillStyle = '#ffee00';
+        ctx.fillRect(x - 3, baseY - 7, 6, 2);
+
+        // Brazos arriba (manos juntas para malabarear)
+        ctx.fillStyle = '#0066cc';
+        ctx.fillRect(x - 9, baseY - 6, 3, 8);
+        ctx.fillRect(x + 6, baseY - 6, 3, 8);
+
+        // Cabeza (skin)
+        ctx.fillStyle = '#ffcc99';
+        ctx.fillRect(x - 4, baseY - 14, 8, 8);
+        // Bigote frondoso
+        ctx.fillStyle = '#553311';
+        ctx.fillRect(x - 3, baseY - 8, 6, 2);
+        // Ojos
+        ctx.fillStyle = '#000';
+        ctx.fillRect(x - 2, baseY - 11, 1, 2);
+        ctx.fillRect(x + 1, baseY - 11, 1, 2);
+        // Sombrero de copa
+        ctx.fillStyle = '#000';
+        ctx.fillRect(x - 5, baseY - 17, 10, 2);
+        ctx.fillRect(x - 4, baseY - 23, 8, 6);
+        ctx.fillStyle = '#cc1010';
+        ctx.fillRect(x - 4, baseY - 20, 8, 1);
+
+        // 3 BOLAS rotando en órbita (malabares!)
+        const ballColors = ['#ff44aa', '#00d4ff', '#ffee00'];
+        for (let i = 0; i < 3; i++) {
+            const angle = time * 3.5 + i * (Math.PI * 2 / 3);
+            const bx = x + Math.cos(angle) * 14;
+            const by = baseY - 20 + Math.abs(Math.sin(angle)) * -10;
+            ctx.fillStyle = ballColors[i];
+            ctx.fillRect(bx - 3, by - 3, 6, 6);
+            // Brillo blanco
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(bx - 2, by - 2, 2, 2);
+        }
+    }
+    // -------------------------------------------------------
+    //   META FINAL del nivel (banderines + estructura)
+    // -------------------------------------------------------
+    drawGoal(camera, worldX, time) {
+        const ctx = this.ctx;
+        const sx = worldX - camera;
+        if (sx < -150 || sx > W + 150) return;
+
+        // Aura dorada brillante (atrae la atención)
+        ctx.globalAlpha = 0.25 + Math.sin(time * 4) * 0.15;
+        ctx.fillStyle = '#ffee00';
+        ctx.beginPath();
+        ctx.arc(sx, GROUND_Y - 60, 90, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        // Postes laterales (madera con base)
+        ctx.fillStyle = '#8b4513';
+        ctx.fillRect(sx - 55, GROUND_Y - 140, 8, 140);
+        ctx.fillRect(sx + 47, GROUND_Y - 140, 8, 140);
+        // Sombra de los postes
+        ctx.fillStyle = '#5a2d0a';
+        ctx.fillRect(sx - 55, GROUND_Y - 140, 2, 140);
+        ctx.fillRect(sx + 47, GROUND_Y - 140, 2, 140);
+        // Base ensanchada
+        ctx.fillStyle = '#6b3410';
+        ctx.fillRect(sx - 60, GROUND_Y - 8, 14, 8);
+        ctx.fillRect(sx + 46, GROUND_Y - 8, 14, 8);
+
+        // Arco superior rojo con franjas blancas (tipo carpa)
+        ctx.fillStyle = '#cc0033';
+        ctx.fillRect(sx - 60, GROUND_Y - 148, 120, 12);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(sx - 58, GROUND_Y - 145, 116, 2);
+        ctx.fillRect(sx - 58, GROUND_Y - 140, 116, 2);
+        // Borde dorado del arco
+        ctx.strokeStyle = '#ffee00';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(sx - 60, GROUND_Y - 148, 120, 12);
+
+        // Texto "META" en el arco
+        ctx.font = 'bold 14px "Press Start 2P", monospace';
+        ctx.fillStyle = '#440011';
+        ctx.textAlign = 'center';
+        ctx.fillText('META', sx + 1, GROUND_Y - 137);
+        ctx.fillStyle = '#ffee00';
+        ctx.fillText('META', sx, GROUND_Y - 138);
+        ctx.textAlign = 'left';
+
+        // Banderines colgando del arco (cuerda con triangles)
+        const flagColors = ['#ff44aa', '#ffee00', '#00d4ff', '#33ff66', '#ff8800', '#ffffff', '#cc1010', '#aa44ff'];
+        for (let i = 0; i < 8; i++) {
+            const fx = sx - 56 + i * 14;
+            const sway = Math.sin(time * 2 + i * 0.4) * 1.2;
+            ctx.fillStyle = flagColors[i];
+            // Triángulo descendente (3 segmentos)
+            ctx.fillRect(fx, GROUND_Y - 132 + sway, 8, 3);
+            ctx.fillRect(fx + 1, GROUND_Y - 129 + sway, 6, 3);
+            ctx.fillRect(fx + 2, GROUND_Y - 126 + sway, 4, 3);
+            ctx.fillRect(fx + 3, GROUND_Y - 123 + sway, 2, 2);
+        }
+        // Cuerda
+        ctx.fillStyle = '#aa8800';
+        ctx.fillRect(sx - 56, GROUND_Y - 133, 112, 1);
+
+        // PATRÓN A CUADROS BLANCO/NEGRO (cuadrículas de meta) en el suelo
+        for (let row = 0; row < 4; row++) {
+            for (let col = 0; col < 10; col++) {
+                const isBlack = (row + col) % 2 === 0;
+                ctx.fillStyle = isBlack ? '#000' : '#fff';
+                ctx.fillRect(sx - 50 + col * 10, GROUND_Y - 4 + row * 1, 10, 1);
+            }
+        }
+
+        // ESTRELLA dorada gigante pulsante en el centro
+        const starSize = 18 + Math.sin(time * 3) * 4;
+        ctx.save();
+        ctx.translate(sx, GROUND_Y - 75);
+        ctx.rotate(time * 0.8);
+        ctx.fillStyle = '#aa6600';
+        this.drawTinyStar(2, 2, starSize);
+        ctx.fillStyle = '#ffee00';
+        this.drawTinyStar(0, 0, starSize);
+        ctx.strokeStyle = '#ff8800';
+        ctx.lineWidth = 2;
+        this.drawTinyStar(0, 0, starSize);
+        ctx.stroke();
+        ctx.fillStyle = '#ffffff';
+        this.drawTinyStar(0, 0, starSize * 0.4);
+        ctx.restore();
+
+        // Pequeños sparkles ascendentes alrededor de la meta
+        for (let i = 0; i < 6; i++) {
+            const a = time * 0.5 + i * (Math.PI * 2 / 6);
+            const r = 60 + Math.sin(time * 2 + i) * 10;
+            const px = sx + Math.cos(a) * r;
+            const py = (GROUND_Y - 80) + Math.sin(a) * r * 0.6;
+            ctx.fillStyle = i % 2 === 0 ? '#ffee00' : '#ffffff';
+            ctx.fillRect(px - 1, py - 1, 2, 2);
+        }
+    }
+
+    drawElephant(x, y) {
+        const ctx = this.ctx;
+        // ---- CUERPO con sombreado ----
+        // Cuerpo principal (forma redondeada con varios rectángulos)
+        ctx.fillStyle = '#aaaaaa';
+        ctx.fillRect(x + 2, y + 8, 56, 38);     // cuerpo central
+        ctx.fillRect(x + 6, y + 4, 48, 4);      // top con curva
+        ctx.fillRect(x, y + 14, 60, 28);        // expandido medio
+
+        // Sombras inferiores
+        ctx.fillStyle = '#666666';
+        ctx.fillRect(x + 4, y + 38, 52, 6);
+
+        // ---- CABEZA grande (a la izquierda) ----
+        ctx.fillStyle = '#aaaaaa';
+        ctx.fillRect(x - 22, y + 8, 26, 36);    // cabeza
+        ctx.fillRect(x - 18, y + 4, 22, 4);     // top curva
+
+        // ---- OREJAS grandes con interior rosa ----
+        ctx.fillStyle = '#888888';
+        ctx.fillRect(x - 26, y + 6, 8, 22);     // oreja izq (atrás)
+        ctx.fillStyle = '#cccccc';
+        ctx.fillRect(x + 0, y + 6, 10, 24);     // oreja der (frente)
+        // Interior rosa de las orejas
+        ctx.fillStyle = '#ddaaaa';
+        ctx.fillRect(x - 24, y + 10, 4, 14);
+        ctx.fillRect(x + 2, y + 10, 6, 16);
+
+        // ---- TROMPA enroscada ----
+        ctx.fillStyle = '#aaaaaa';
+        ctx.fillRect(x - 22, y + 32, 6, 14);    // base trompa
+        ctx.fillRect(x - 26, y + 38, 10, 5);
+        ctx.fillRect(x - 28, y + 42, 8, 5);
+        ctx.fillRect(x - 22, y + 45, 6, 4);
+        ctx.fillStyle = '#888888';
+        // Anillos de la trompa
+        ctx.fillRect(x - 22, y + 36, 6, 1);
+        ctx.fillRect(x - 22, y + 40, 6, 1);
+
+        // ---- COLMILLOS blancos ----
+        ctx.fillStyle = '#ffffee';
+        ctx.fillRect(x - 16, y + 38, 4, 6);
+        ctx.fillRect(x - 12, y + 38, 4, 5);
+        ctx.fillStyle = '#dddd99';
+        ctx.fillRect(x - 16, y + 43, 4, 1);
+        ctx.fillRect(x - 12, y + 42, 4, 1);
+
+        // ---- OJO grande con brillo ----
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(x - 10, y + 18, 6, 6);
+        ctx.fillStyle = '#000';
+        ctx.fillRect(x - 8, y + 20, 3, 4);
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(x - 7, y + 20, 1, 1);
+
+        // Cejas
+        ctx.fillStyle = '#666';
+        ctx.fillRect(x - 11, y + 16, 7, 1);
+
+        // ---- MANTA DECORATIVA sobre el lomo (estilo circo) ----
+        // Manta roja con borde dorado
+        ctx.fillStyle = '#cc0033';
+        ctx.fillRect(x + 4, y + 12, 50, 12);
+        ctx.fillStyle = '#ffee00';
+        ctx.fillRect(x + 4, y + 12, 50, 2);
+        ctx.fillRect(x + 4, y + 22, 50, 2);
+        // Estrellas en la manta
+        ctx.fillStyle = '#ffee00';
+        for (let i = 0; i < 4; i++) {
+            ctx.fillRect(x + 10 + i * 12, y + 17, 3, 3);
+            ctx.fillRect(x + 11 + i * 12, y + 16, 1, 5);
+        }
+
+        // ---- PATAS gruesas (4 patas) ----
+        ctx.fillStyle = '#888888';
+        ctx.fillRect(x - 18, y + 44, 10, 12);   // pata izq frente
+        ctx.fillRect(x - 4, y + 44, 10, 12);    // pata der frente
+        ctx.fillRect(x + 24, y + 44, 10, 12);   // pata izq atrás
+        ctx.fillRect(x + 42, y + 44, 10, 12);   // pata der atrás
+        // Sombras y uñas en las patas
+        ctx.fillStyle = '#555';
+        ctx.fillRect(x - 18, y + 54, 10, 2);
+        ctx.fillRect(x - 4, y + 54, 10, 2);
+        ctx.fillRect(x + 24, y + 54, 10, 2);
+        ctx.fillRect(x + 42, y + 54, 10, 2);
+        ctx.fillStyle = '#ffeeaa';
+        ctx.fillRect(x - 17, y + 54, 2, 2);
+        ctx.fillRect(x - 13, y + 54, 2, 2);
+        ctx.fillRect(x - 3, y + 54, 2, 2);
+        ctx.fillRect(x + 1, y + 54, 2, 2);
+
+        // ---- COLA con tuft ----
+        ctx.fillStyle = '#888';
+        ctx.fillRect(x + 58, y + 16, 2, 14);
+        ctx.fillStyle = '#000';
+        ctx.fillRect(x + 56, y + 28, 6, 4);
+        ctx.fillRect(x + 57, y + 32, 4, 2);
+
+        // ---- SOMBRERITO de circo ----
+        ctx.fillStyle = '#0044aa';
+        ctx.fillRect(x - 16, y - 2, 14, 6);
+        ctx.fillRect(x - 18, y + 2, 18, 2);
+        // Pompón
+        ctx.fillStyle = '#ffee00';
+        ctx.fillRect(x - 12, y - 6, 6, 4);
+        // Banda dorada
+        ctx.fillStyle = '#ffaa00';
+        ctx.fillRect(x - 18, y + 2, 18, 1);
+    }
+    // -------------------------------------------------------
+    //   CHARLIE + LEÓN
+    // -------------------------------------------------------
+    drawCharlieLion(cx, cy, frame) {
+        const ctx = this.ctx;
+        const lionTop = cy - 30;
+        ctx.fillStyle = COL.lBody;
+        ctx.fillRect(cx + 18, lionTop + 4, 4, 8);
+        ctx.fillRect(cx + 22, lionTop, 4, 6);
+        ctx.fillStyle = COL.lMane;
+        ctx.fillRect(cx + 22, lionTop - 4, 6, 6);
+        ctx.fillStyle = COL.lBody;
+        ctx.fillRect(cx - 20, lionTop + 4, 40, 18);
+        ctx.fillStyle = COL.lBelly;
+        ctx.fillRect(cx - 18, lionTop + 14, 36, 6);
+        ctx.fillStyle = COL.lBody;
+        ctx.fillRect(cx + 8, lionTop - 8, 18, 16);
+        ctx.fillStyle = COL.lMane;
+        ctx.fillRect(cx + 6, lionTop - 12, 22, 6);
+        ctx.fillRect(cx + 6, lionTop + 6, 22, 4);
+        ctx.fillRect(cx + 4, lionTop - 8, 4, 18);
+        ctx.fillRect(cx + 26, lionTop - 8, 2, 18);
+        // Mechones más claros de la melena (resaltes)
+        ctx.fillStyle = COL.lManeL;
+        ctx.fillRect(cx + 8, lionTop - 10, 4, 4);
+        ctx.fillRect(cx + 18, lionTop - 10, 4, 4);
+        ctx.fillRect(cx + 4, lionTop - 4, 2, 4);
+        ctx.fillRect(cx + 27, lionTop - 4, 1, 4);
+
+        // Orejas con interior rosado
+        ctx.fillStyle = COL.lMane;
+        ctx.fillRect(cx + 10, lionTop - 14, 3, 4);
+        ctx.fillRect(cx + 19, lionTop - 14, 3, 4);
+        ctx.fillStyle = '#ff9988';
+        ctx.fillRect(cx + 11, lionTop - 13, 1, 2);
+        ctx.fillRect(cx + 20, lionTop - 13, 1, 2);
+
+        // Ojos grandes amarillos brillantes
+        ctx.fillStyle = '#ffdd44';
+        ctx.fillRect(cx + 12, lionTop - 5, 4, 4);
+        ctx.fillRect(cx + 19, lionTop - 5, 4, 4);
+        // Pupila negra
+        ctx.fillStyle = '#000';
+        ctx.fillRect(cx + 13, lionTop - 4, 2, 2);
+        ctx.fillRect(cx + 20, lionTop - 4, 2, 2);
+        // Brillo en los ojos
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(cx + 14, lionTop - 4, 1, 1);
+        ctx.fillRect(cx + 21, lionTop - 4, 1, 1);
+
+        // Hocico (nariz negra triangular)
+        ctx.fillStyle = '#000';
+        ctx.fillRect(cx + 16, lionTop + 1, 3, 2);
+        ctx.fillRect(cx + 17, lionTop, 1, 1);
+
+        // Boca abierta rugiendo
+        ctx.fillStyle = COL.lDark;
+        ctx.fillRect(cx + 14, lionTop + 4, 7, 2);
+        // Lengua rosa
+        ctx.fillStyle = '#ff5577';
+        ctx.fillRect(cx + 16, lionTop + 4, 3, 2);
+        // Colmillos blancos
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(cx + 14, lionTop + 4, 1, 2);
+        ctx.fillRect(cx + 20, lionTop + 4, 1, 2);
+
+        // Bigotes (líneas finas a ambos lados del hocico)
+        ctx.fillStyle = '#220000';
+        ctx.fillRect(cx + 13, lionTop + 2, 3, 1);
+        ctx.fillRect(cx + 13, lionTop + 4, 3, 1);
+        ctx.fillRect(cx + 20, lionTop + 2, 4, 1);
+        ctx.fillRect(cx + 20, lionTop + 4, 4, 1);
+
+        // Mejillas (pequeño detalle naranja)
+        ctx.fillStyle = COL.lBelly;
+        ctx.fillRect(cx + 11, lionTop, 2, 2);
+        ctx.fillRect(cx + 22, lionTop, 2, 2);
+        ctx.fillStyle = COL.lBody;
+        if (frame === 0) {
+            ctx.fillRect(cx - 16, cy - 10, 6, 10);
+            ctx.fillRect(cx - 6,  cy - 10, 6, 10);
+            ctx.fillRect(cx + 6,  cy - 10, 6, 10);
+            ctx.fillRect(cx + 14, cy - 8,  6, 8);
+        } else {
+            ctx.fillRect(cx - 18, cy - 8,  6, 8);
+            ctx.fillRect(cx - 4,  cy - 10, 6, 10);
+            ctx.fillRect(cx + 4,  cy - 8,  6, 8);
+            ctx.fillRect(cx + 14, cy - 10, 6, 10);
+        }
+        ctx.fillStyle = COL.lDark;
+        if (frame === 0) {
+            ctx.fillRect(cx - 16, cy - 2, 6, 2);
+            ctx.fillRect(cx - 6,  cy - 2, 6, 2);
+            ctx.fillRect(cx + 6,  cy - 2, 6, 2);
+        } else {
+            ctx.fillRect(cx - 4,  cy - 2, 6, 2);
+            ctx.fillRect(cx + 14, cy - 2, 6, 2);
+        }
+        // Charlie sentado encima del león → reutilizamos drawCharlieRider
+        this.drawCharlieRider(cx, lionTop - 26, frame);
+    }
+    drawCharlieDeath(cx, cy, t, useHorse = false) {
+        const ctx = this.ctx;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(t * 4);
+        if (useHorse) this.drawCharlieHorse(0, 0, 0);
+        else this.drawCharlieLion(0, 0, 0);
+        ctx.restore();
+        ctx.fillStyle = COL.hudYellow;
+        for (let i = 0; i < 4; i++) {
+            const a = t * 6 + i * Math.PI / 2;
+            const r = 30 + Math.sin(t * 10) * 6;
+            ctx.fillRect(cx + Math.cos(a) * r, cy - 30 + Math.sin(a) * r, 4, 4);
+        }
+    }
+    // -------------------------------------------------------
+    //   AROS DE FUEGO — ELIPSE 70×110 con fuego animado
+    // -------------------------------------------------------
+    drawHoop(hoop, camera) {
+        const ctx = this.ctx;
+        const x = hoop.worldX - camera;
+        const y = hoop.centerY;
+        if (x < -120 || x > W + 120) return;
+
+        const w = HOOP_VIS_HALF_W;     // 35
+        const h = HOOP_VIS_HALF_H;     // 55
+
+        // Soporte morado superior
+        ctx.fillStyle = COL.hSupDark;
+        ctx.fillRect(x - 5, y - h - 18, 10, 18);
+        ctx.fillStyle = COL.hSupport;
+        ctx.fillRect(x - 4, y - h - 17, 8, 16);
+        ctx.fillStyle = COL.hSupDark;
+        ctx.fillRect(x - 4, y - h - 2, 8, 5);
+
+        // Aura difusa de fuego (resplandor de calor)
+        ctx.globalAlpha = 0.20;
+        ctx.fillStyle = COL.hOrange;
+        ctx.beginPath();
+        ctx.ellipse(x, y, w + 10, h + 10, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        // Stroke EXTERIOR naranja (grueso)
+        ctx.strokeStyle = COL.hOrange;
+        ctx.lineWidth = HOOP_STROKE_OUT;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.ellipse(x, y, w, h, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Stroke INTERIOR amarillo (más fino)
+        ctx.strokeStyle = COL.hYellow;
+        ctx.lineWidth = HOOP_STROKE_IN;
+        ctx.beginPath();
+        ctx.ellipse(x, y, w - 2, h - 2, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Lenguas de fuego irregulares alrededor del aro
+        const tongues = 16;
+        for (let i = 0; i < tongues; i++) {
+            const t = i / tongues;
+            const a = t * Math.PI * 2;
+            const px = x + Math.cos(a) * w;
+            const py = y + Math.sin(a) * h;
+            const nx = Math.cos(a);
+            const ny = Math.sin(a);
+            const len = 4 + (Math.sin(hoop.flamePhase * 2 + i * 0.7) + 1) * 5;
+            const isYellow = ((i + hoop.flameFrame) & 1) === 0;
+            ctx.strokeStyle = isYellow ? COL.hYellow : COL.hOrange;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(px, py);
+            ctx.lineTo(px + nx * len, py + ny * len);
+            ctx.stroke();
+        }
+
+        // Chispas brillantes
+        ctx.fillStyle = COL.hSpark;
+        const sparkPositions = [
+            [-w * 0.6, -h * 0.85], [w * 0.6, -h * 0.85],
+            [-w * 0.9, 0],         [w * 0.9, 0],
+            [-w * 0.6, h * 0.85],  [w * 0.6, h * 0.85]
+        ];
+        for (let i = 0; i < sparkPositions.length; i++) {
+            if (((i + hoop.flameFrame) & 1) === 0) {
+                const [sx, sy] = sparkPositions[i];
+                ctx.fillRect(x + sx - 1, y + sy - 1, 3, 3);
+            }
+        }
+
+        // ★ ESTRELLA CENTRAL pulsante (indica el "ojo del aro")
+        const pulseT = performance.now() / 1000;
+        const pulseSize = 5 + Math.sin(pulseT * 4) * 2;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(hoop.flamePhase * 0.5);
+        ctx.fillStyle = '#ffee00';
+        this.drawTinyStar(0, 0, pulseSize);
+        ctx.fillStyle = '#ffffff';
+        this.drawTinyStar(0, 0, pulseSize * 0.5);
+        ctx.restore();
+    }
+    // ---- Versión SPLIT del aro para que Charlie pase POR DENTRO ----
+    // Dibuja solo la mitad indicada (back = atrás del player, front = adelante)
+    drawHoopHalf(hoop, camera, side) {
+        const ctx = this.ctx;
+        const x = hoop.worldX - camera;
+        // Si el aro está fuera de pantalla, no usamos clip (no hace falta)
+        if (x < -120 || x > W + 120) return;
+        ctx.save();
+        ctx.beginPath();
+        // Split en el centro X del aro:
+        //   'back'  = mitad IZQUIERDA (Charlie todavía no la cruzó)
+        //   'front' = mitad DERECHA (Charlie está por cruzar/saliendo)
+        if (side === 'back') {
+            ctx.rect(0, 0, x, H);
+        } else {
+            ctx.rect(x, 0, W - x, H);
+        }
+        ctx.clip();
+        this.drawHoop(hoop, camera);
+        ctx.restore();
+    }
+    // -------------------------------------------------------
+    //   VALLAS (obstáculo del Stage 3)
+    // -------------------------------------------------------
+    drawHurdle(hurdle, camera) {
+        const ctx = this.ctx;
+        const x = hurdle.worldX - camera;
+        if (x < -50 || x > W + 50) return;
+        const y = GROUND_Y;
+        const h = hurdle.height;
+        const time = performance.now() / 1000;
+
+        // Postes verticales (marrón madera con sombra)
+        ctx.fillStyle = '#8b4513';
+        ctx.fillRect(x - 16, y - h, 5, h);
+        ctx.fillRect(x + 11, y - h, 5, h);
+        ctx.fillStyle = '#5a2d0a';
+        ctx.fillRect(x - 16, y - h, 2, h);
+        ctx.fillRect(x + 11, y - h, 2, h);
+        // Veta de madera
+        ctx.fillStyle = '#aa6633';
+        ctx.fillRect(x - 13, y - h + 6, 1, h - 12);
+        ctx.fillRect(x + 14, y - h + 6, 1, h - 12);
+
+        // Base ensanchada
+        ctx.fillStyle = '#6b3410';
+        ctx.fillRect(x - 19, y - 5, 11, 5);
+        ctx.fillRect(x + 8,  y - 5, 11, 5);
+
+        // Barra transversal blanca con franjas alternadas
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x - 19, y - h + 2, 38, 9);
+        ctx.fillStyle = '#999';
+        ctx.fillRect(x - 19, y - h + 2, 38, 2);
+        ctx.fillStyle = '#cc1010';
+        ctx.fillRect(x - 17, y - h + 5, 10, 5);
+        ctx.fillRect(x + 5,  y - h + 5, 10, 5);
+        ctx.fillStyle = '#1155cc';
+        ctx.fillRect(x - 5,  y - h + 5, 10, 5);
+
+        // Segunda barra
+        ctx.fillStyle = '#dddddd';
+        ctx.fillRect(x - 17, y - h + 24, 34, 4);
+
+        // BANDERINES triangulares colgando del poste (con sway sutil)
+        const flagColors = ['#ff44aa', '#ffee00', '#00d4ff', '#33ff66'];
+        const sway = Math.sin(time * 3) * 0.5;
+        for (let i = 0; i < 4; i++) {
+            const fx = x - 14 + i * 9;
+            const fy = y - h - 6;
+            const flagSway = Math.sin(time * 3 + i * 0.5) * 1;
+            ctx.fillStyle = flagColors[i];
+            // Triángulo decorativo (3 segmentos descendentes)
+            ctx.fillRect(fx, fy, 6, 2);
+            ctx.fillRect(fx + 1 + flagSway, fy + 2, 4, 2);
+            ctx.fillRect(fx + 2 + flagSway, fy + 4, 2, 2);
+        }
+        // Cuerda que sostiene los banderines
+        ctx.fillStyle = '#aa8800';
+        ctx.fillRect(x - 16, y - h - 7, 32, 1);
+
+        // ESTRELLA dorada en el centro de la barra
+        ctx.fillStyle = '#ffee00';
+        ctx.fillRect(x - 1, y - h + 6, 2, 1);
+        ctx.fillRect(x - 2, y - h + 7, 4, 1);
+        ctx.fillRect(x - 1, y - h + 8, 2, 1);
+    }
+    // -------------------------------------------------------
+    //   CHARLIE + CABALLO (sprite del Stage 3)
+    // -------------------------------------------------------
+    drawCharlieHorse(cx, cy, frame) {
+        const ctx = this.ctx;
+        const horseTop = cy - 30;
+
+        // Cola larga del caballo (fluida)
+        ctx.fillStyle = '#553311';
+        ctx.fillRect(cx + 18, horseTop + 4, 4, 8);
+        ctx.fillRect(cx + 22, horseTop + 6, 3, 10);
+        ctx.fillRect(cx + 25, horseTop + 12, 2, 8);
+
+        // Cuerpo del caballo (marrón claro/tan)
+        ctx.fillStyle = '#c08855';
+        ctx.fillRect(cx - 20, horseTop + 4, 40, 18);
+        // Vientre más claro
+        ctx.fillStyle = '#dda87a';
+        ctx.fillRect(cx - 18, horseTop + 14, 36, 6);
+
+        // Cabeza del caballo (forma alargada, sin melena alrededor)
+        ctx.fillStyle = '#c08855';
+        ctx.fillRect(cx + 8, horseTop - 8, 14, 14);
+        // Hocico largo (característico)
+        ctx.fillRect(cx + 20, horseTop - 2, 8, 8);
+        // Nariz oscura
+        ctx.fillStyle = '#8b5a2b';
+        ctx.fillRect(cx + 24, horseTop, 4, 4);
+        // Fosas nasales
+        ctx.fillStyle = '#000';
+        ctx.fillRect(cx + 25, horseTop + 1, 2, 2);
+
+        // Crines en el cuello (mane corto a lo largo del lomo)
+        ctx.fillStyle = '#553311';
+        ctx.fillRect(cx + 4, horseTop - 6, 6, 14);
+        ctx.fillStyle = '#774422';
+        ctx.fillRect(cx + 6, horseTop - 4, 2, 10);
+
+        // Orejas puntiagudas con interior rosado
+        ctx.fillStyle = '#c08855';
+        ctx.fillRect(cx + 11, horseTop - 12, 3, 4);
+        ctx.fillRect(cx + 16, horseTop - 12, 3, 4);
+        ctx.fillStyle = '#ff9988';
+        ctx.fillRect(cx + 12, horseTop - 11, 1, 2);
+        ctx.fillRect(cx + 17, horseTop - 11, 1, 2);
+
+        // Estrella blanca en la frente (palomino mark)
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(cx + 14, horseTop - 7, 2, 3);
+        ctx.fillRect(cx + 13, horseTop - 6, 4, 1);
+
+        // Ojo grande
+        ctx.fillStyle = '#000';
+        ctx.fillRect(cx + 16, horseTop - 4, 3, 3);
+        // Brillo
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(cx + 17, horseTop - 4, 1, 1);
+
+        // Bigote/pelo del hocico
+        ctx.fillStyle = '#553311';
+        ctx.fillRect(cx + 22, horseTop + 5, 2, 1);
+
+        // Patas (animadas como el león)
+        ctx.fillStyle = '#a06030';
+        if (frame === 0) {
+            ctx.fillRect(cx - 16, cy - 10, 5, 10);
+            ctx.fillRect(cx - 6,  cy - 10, 5, 10);
+            ctx.fillRect(cx + 6,  cy - 10, 5, 10);
+            ctx.fillRect(cx + 14, cy - 8,  5, 8);
+        } else {
+            ctx.fillRect(cx - 18, cy - 8,  5, 8);
+            ctx.fillRect(cx - 4,  cy - 10, 5, 10);
+            ctx.fillRect(cx + 4,  cy - 8,  5, 8);
+            ctx.fillRect(cx + 14, cy - 10, 5, 10);
+        }
+        // Cascos negros
+        ctx.fillStyle = '#222';
+        if (frame === 0) {
+            ctx.fillRect(cx - 17, cy - 2, 7, 2);
+            ctx.fillRect(cx - 7,  cy - 2, 7, 2);
+            ctx.fillRect(cx + 5,  cy - 2, 7, 2);
+        } else {
+            ctx.fillRect(cx - 5, cy - 2, 7, 2);
+            ctx.fillRect(cx + 13, cy - 2, 7, 2);
+        }
+
+        // ----- Charlie sentado encima (idéntico al del león) -----
+        this.drawCharlieRider(cx, horseTop - 26, frame);
+    }
+    // -------------------------------------------------------
+    //   Charlie (solo el jinete) — reutilizado por León y Caballo
+    // -------------------------------------------------------
+    drawCharlieRider(cx, cTop, frame) {
+        const ctx = this.ctx;
+        const lionTop = cTop + 26;
+
+        // ---- PIERNAS (con medias a rayas estilo payaso)
+        ctx.fillStyle = COL.cLeg;
+        ctx.fillRect(cx - 10, lionTop, 6, 8);
+        ctx.fillRect(cx + 2,  lionTop, 6, 8);
+        // Rayas blancas en las medias
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(cx - 10, lionTop + 2, 6, 1);
+        ctx.fillRect(cx - 10, lionTop + 5, 6, 1);
+        ctx.fillRect(cx + 2, lionTop + 2, 6, 1);
+        ctx.fillRect(cx + 2, lionTop + 5, 6, 1);
+        // Zapatos grandes (estilo payaso)
+        ctx.fillStyle = COL.cShoe;
+        ctx.fillRect(cx - 12, lionTop + 7, 10, 3);
+        ctx.fillRect(cx + 2,  lionTop + 7, 10, 3);
+        // Brillo en zapatos
+        ctx.fillStyle = '#dd6622';
+        ctx.fillRect(cx - 11, lionTop + 7, 2, 1);
+        ctx.fillRect(cx + 3,  lionTop + 7, 2, 1);
+
+        // ---- CUERPO (traje celeste con lunares blancos)
+        ctx.fillStyle = COL.cBody;
+        ctx.fillRect(cx - 8, cTop + 14, 16, 12);
+        // Sombreado lateral más oscuro
+        ctx.fillStyle = '#0077cc';
+        ctx.fillRect(cx + 6, cTop + 14, 2, 12);
+        // Lunares blancos
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(cx - 6, cTop + 16, 2, 2);
+        ctx.fillRect(cx + 3, cTop + 18, 2, 2);
+        ctx.fillRect(cx - 5, cTop + 22, 2, 2);
+        ctx.fillRect(cx + 4, cTop + 23, 2, 2);
+
+        // ESTRELLA dorada en el pecho (decoración de payaso)
+        ctx.fillStyle = COL.hudYellow;
+        ctx.fillRect(cx - 1, cTop + 17, 2, 2);
+        ctx.fillRect(cx - 2, cTop + 18, 4, 1);
+        ctx.fillRect(cx - 1, cTop + 19, 2, 2);
+
+        // CINTURÓN ancho rojo con hebilla dorada
+        ctx.fillStyle = '#aa0033';
+        ctx.fillRect(cx - 8, cTop + 24, 16, 3);
+        ctx.fillStyle = '#ffee00';
+        ctx.fillRect(cx - 2, cTop + 24, 4, 3);
+        ctx.fillStyle = '#aa6600';
+        ctx.fillRect(cx - 1, cTop + 25, 2, 1);
+
+        // ---- COLLAR/CUELLO con volado (zigzag blanco)
+        ctx.fillStyle = COL.cDetail;
+        for (let i = 0; i < 5; i++) {
+            const x = cx - 9 + i * 4;
+            ctx.fillRect(x, cTop + 12, 2, 4);
+            ctx.fillRect(x + 2, cTop + 11, 2, 5);
+        }
+
+        // CORBATÍN ROJO con lunares blancos (encima del volado)
+        ctx.fillStyle = '#cc0033';
+        ctx.fillRect(cx - 4, cTop + 13, 8, 3);
+        // Forma de moñito (puntas a los lados)
+        ctx.fillRect(cx - 6, cTop + 12, 2, 5);
+        ctx.fillRect(cx + 4, cTop + 12, 2, 5);
+        // Nudo central
+        ctx.fillStyle = '#660011';
+        ctx.fillRect(cx - 1, cTop + 13, 2, 3);
+        // Lunares blancos
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(cx - 5, cTop + 13, 1, 1);
+        ctx.fillRect(cx - 3, cTop + 15, 1, 1);
+        ctx.fillRect(cx + 3, cTop + 14, 1, 1);
+        ctx.fillRect(cx + 5, cTop + 15, 1, 1);
+
+        // ---- BRAZOS (animados según frame)
+        ctx.fillStyle = COL.cBody;
+        if (frame === 0) {
+            ctx.fillRect(cx - 12, cTop + 14, 4, 8);
+            ctx.fillRect(cx + 8,  cTop + 14, 4, 8);
+        } else {
+            ctx.fillRect(cx - 12, cTop + 16, 4, 8);
+            ctx.fillRect(cx + 8,  cTop + 12, 4, 8);
+        }
+        // Guantes blancos
+        ctx.fillStyle = COL.cDetail;
+        if (frame === 0) {
+            ctx.fillRect(cx - 13, cTop + 21, 5, 3);
+            ctx.fillRect(cx + 7,  cTop + 21, 5, 3);
+        } else {
+            ctx.fillRect(cx - 13, cTop + 23, 5, 3);
+            ctx.fillRect(cx + 7,  cTop + 19, 5, 3);
+        }
+
+        // ---- CARA (maquillaje blanco de payaso)
+        ctx.fillStyle = '#ffe8d6';   // base ligeramente cremosa
+        ctx.fillRect(cx - 7, cTop + 4, 14, 10);
+        // Sombra de mejillas suave en los costados
+        ctx.fillStyle = '#ffccaa';
+        ctx.fillRect(cx - 7, cTop + 12, 2, 2);
+        ctx.fillRect(cx + 5, cTop + 12, 2, 2);
+
+        // Ojos grandes
+        ctx.fillStyle = COL.cEye;
+        ctx.fillRect(cx - 5, cTop + 8, 3, 3);
+        ctx.fillRect(cx + 2, cTop + 8, 3, 3);
+        // Brillo en los ojos
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(cx - 4, cTop + 8, 1, 1);
+        ctx.fillRect(cx + 3, cTop + 8, 1, 1);
+        // Cejas (líneas finas arriba)
+        ctx.fillStyle = '#552200';
+        ctx.fillRect(cx - 5, cTop + 6, 3, 1);
+        ctx.fillRect(cx + 2, cTop + 6, 3, 1);
+
+        // Mejillas rosadas pintadas
+        ctx.fillStyle = COL.hudMagenta;
+        ctx.fillRect(cx - 7, cTop + 11, 2, 2);
+        ctx.fillRect(cx + 5, cTop + 11, 2, 2);
+
+        // Nariz roja grande
+        ctx.fillStyle = COL.hudRed;
+        ctx.fillRect(cx - 2, cTop + 10, 4, 3);
+        // Brillo en la nariz
+        ctx.fillStyle = '#ff8888';
+        ctx.fillRect(cx - 1, cTop + 10, 1, 1);
+
+        // Sonrisa
+        ctx.fillStyle = COL.hudRed;
+        ctx.fillRect(cx - 3, cTop + 13, 6, 1);
+        ctx.fillRect(cx - 2, cTop + 14, 4, 1);
+
+        // ---- GORRO CÓNICO de payaso (puntiagudo) con franjas
+        ctx.fillStyle = COL.cHair;
+        ctx.fillRect(cx - 10, cTop + 4, 20, 2);
+        ctx.fillRect(cx - 9, cTop + 2, 18, 2);
+        ctx.fillRect(cx - 7, cTop, 14, 2);
+        ctx.fillRect(cx - 5, cTop - 2, 10, 2);
+        ctx.fillRect(cx - 3, cTop - 4, 6, 2);
+        ctx.fillRect(cx - 1, cTop - 6, 2, 2);
+
+        // Franjas blancas onduladas
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(cx - 9, cTop + 3, 18, 1);
+        ctx.fillRect(cx - 6, cTop, 12, 1);
+        ctx.fillRect(cx - 3, cTop - 3, 6, 1);
+
+        // ESTRELLITAS doradas en el gorro
+        ctx.fillStyle = COL.hudYellow;
+        ctx.fillRect(cx - 6, cTop + 2, 1, 1);
+        ctx.fillRect(cx + 5, cTop + 2, 1, 1);
+        ctx.fillRect(cx - 4, cTop - 1, 1, 1);
+        ctx.fillRect(cx + 3, cTop - 1, 1, 1);
+        ctx.fillRect(cx - 2, cTop - 4, 1, 1);
+        ctx.fillRect(cx + 1, cTop - 4, 1, 1);
+
+        // Pompón grande amarillo con anillos
+        ctx.fillStyle = COL.hudYellow;
+        ctx.fillRect(cx - 3, cTop - 11, 6, 5);
+        ctx.fillStyle = '#ff8800';
+        ctx.fillRect(cx - 3, cTop - 9, 6, 1);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(cx - 2, cTop - 11, 2, 1);
+        // Pequeño hilo sobre el pompón
+        ctx.fillStyle = '#aa6600';
+        ctx.fillRect(cx, cTop - 13, 1, 2);
+
+        // Pelo rosa asomando por los lados con mechones
+        ctx.fillStyle = COL.cHair;
+        ctx.fillRect(cx - 12, cTop + 5, 3, 4);
+        ctx.fillRect(cx + 9, cTop + 5, 3, 4);
+        ctx.fillRect(cx - 13, cTop + 7, 2, 2);
+        ctx.fillRect(cx + 11, cTop + 7, 2, 2);
+    }
+    // -------------------------------------------------------
+    //   POWER-UPS (estrella + cristal slow-mo)
+    // -------------------------------------------------------
+    drawPowerUp(pu, camera) {
+        const ctx = this.ctx;
+        const sx = pu.worldX - camera;
+        if (sx < -50 || sx > W + 50) return;
+        const sy = pu.y + Math.sin(pu.bob) * 4;
+        const time = performance.now() / 1000;
+
+        // Aura DOBLE pulsante
+        ctx.globalAlpha = 0.15 + Math.sin(time * 4) * 0.1;
+        ctx.fillStyle = '#ffee00';
+        ctx.beginPath(); ctx.arc(sx, sy, 32, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 0.4;
+        ctx.beginPath(); ctx.arc(sx, sy, 20, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 1;
+
+        // ESTRELLA DORADA con sparkles satelitales
+        ctx.save();
+        ctx.translate(sx, sy);
+        ctx.rotate(pu.spin * 0.5);
+        // Sombra
+        ctx.fillStyle = '#aa4400';
+        this.drawTinyStar(2, 2, 16);
+        // Estrella principal con borde
+        ctx.fillStyle = '#ffee00';
+        this.drawTinyStar(0, 0, 16);
+        ctx.strokeStyle = '#ff8800';
+        ctx.lineWidth = 1.5;
+        this.drawTinyStar(0, 0, 16);
+        ctx.stroke();
+        // Brillo blanco interno
+        ctx.fillStyle = '#ffffff';
+        this.drawTinyStar(0, 0, 6);
+        ctx.restore();
+
+        // Sparkles orbitales (pequeñas chispitas que giran)
+        for (let i = 0; i < 3; i++) {
+            const a = pu.spin * 1.5 + i * (Math.PI * 2 / 3);
+            const r = 24 + Math.sin(time * 3 + i) * 2;
+            const sparkX = sx + Math.cos(a) * r;
+            const sparkY = sy + Math.sin(a) * r * 0.6;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(sparkX - 1, sparkY - 1, 2, 2);
+            ctx.fillStyle = '#ffee00';
+            ctx.fillRect(sparkX, sparkY, 1, 1);
+        }
+    }
+    // -------------------------------------------------------
+    //   TRAMPOLÍN (plataforma que catapulta a Charlie)
+    // -------------------------------------------------------
+    drawTrampoline(tramp, camera) {
+        const ctx = this.ctx;
+        const sx = tramp.worldX - camera;
+        if (sx < -60 || sx > W + 60) return;
+        const compress = tramp.compress;
+        const time = performance.now() / 1000;
+        // Respiración idle sutil cuando no está comprimido
+        const idleBob = compress > 0 ? 0 : Math.sin(time * 2.5) * 0.8;
+        const yOffset = compress * 4 + idleBob;
+
+        // Aura amarilla pulsante para LLAMAR LA ATENCIÓN
+        ctx.globalAlpha = 0.2 + Math.sin(time * 6) * 0.1;
+        ctx.fillStyle = '#ffee00';
+        ctx.beginPath();
+        ctx.ellipse(sx, GROUND_Y - 10, 32, 14, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        // Patas/postes con sombra
+        ctx.fillStyle = '#882200';
+        ctx.fillRect(sx - 22, GROUND_Y - 6, 5, 6);
+        ctx.fillRect(sx + 17, GROUND_Y - 6, 5, 6);
+        ctx.fillStyle = '#440000';
+        ctx.fillRect(sx - 22, GROUND_Y - 6, 1, 6);
+        ctx.fillRect(sx + 21, GROUND_Y - 6, 1, 6);
+
+        // Plataforma elástica multicapa
+        ctx.fillStyle = '#aa1144';
+        ctx.fillRect(sx - 22, GROUND_Y - 14 + yOffset, 44, 8);
+        ctx.fillStyle = '#ff3366';
+        ctx.fillRect(sx - 22, GROUND_Y - 14 + yOffset, 44, 2);
+        // Tela negra con rayas
+        ctx.fillStyle = '#000';
+        for (let i = 0; i < 4; i++) {
+            ctx.fillRect(sx - 18 + i * 11, GROUND_Y - 11 + yOffset, 7, 1);
+        }
+        // Costuras blancas en el borde
+        ctx.fillStyle = '#ffffff';
+        for (let i = 0; i < 5; i++) {
+            ctx.fillRect(sx - 19 + i * 10, GROUND_Y - 14 + yOffset, 1, 1);
+            ctx.fillRect(sx - 19 + i * 10, GROUND_Y - 8 + yOffset, 1, 1);
+        }
+        ctx.strokeStyle = COL.hudYellow;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(sx - 22, GROUND_Y - 14 + yOffset, 44, 8);
+
+        // Resortes laterales con espiras
+        ctx.fillStyle = '#cccccc';
+        const springH = 6 - compress * 4;
+        ctx.fillRect(sx - 19, GROUND_Y - 6, 3, springH);
+        ctx.fillRect(sx + 17, GROUND_Y - 6, 3, springH);
+        ctx.fillStyle = '#888';
+        for (let i = 0; i < 2; i++) {
+            ctx.fillRect(sx - 19, GROUND_Y - 4 - i * 2, 3, 1);
+            ctx.fillRect(sx + 17, GROUND_Y - 4 - i * 2, 3, 1);
+        }
+
+        // FLECHAS DOBLES amarillas hacia arriba (siempre visibles)
+        const arrowBob = Math.sin(time * 5) * 3;
+        const ay = GROUND_Y - 30 + arrowBob;
+        // Sombra
+        ctx.fillStyle = '#000';
+        ctx.fillRect(sx - 1, ay + 1, 4, 14);
+        ctx.fillRect(sx - 4, ay + 4, 10, 4);
+        ctx.fillRect(sx - 6, ay + 7, 14, 4);
+        // Flecha principal
+        ctx.fillStyle = COL.hudYellow;
+        ctx.fillRect(sx - 2, ay, 4, 14);
+        ctx.fillRect(sx - 5, ay + 3, 10, 4);
+        ctx.fillRect(sx - 7, ay + 6, 14, 4);
+        // Brillo en la punta
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(sx - 1, ay, 2, 4);
+
+        // Segunda flecha más arriba (efecto de rebote)
+        const ay2 = ay - 12;
+        ctx.fillStyle = '#000';
+        ctx.fillRect(sx - 4 + 1, ay2 + 1, 8, 3);
+        ctx.fillStyle = '#ff8800';
+        ctx.fillRect(sx - 4, ay2, 8, 3);
+        ctx.fillRect(sx - 2, ay2 - 2, 4, 2);
+    }
+    // -------------------------------------------------------
+    //   GLOBOS decorativos
+    // -------------------------------------------------------
+    drawBalloon(ball, camera) {
+        if (ball.popped) {
+            if (ball.popTimer < 0.4) {
+                this.drawBalloonPop(ball, camera);
+            }
+            return;
+        }
+        const ctx = this.ctx;
+        const sx = ball.worldX - camera;
+        if (sx < -30 || sx > W + 30) return;
+        const sy = ball.y + Math.sin(ball.bob) * 3;
+        // Cuerda
+        ctx.strokeStyle = '#666';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy + 10);
+        ctx.lineTo(sx + Math.sin(ball.bob * 1.5) * 3, sy + 22);
+        ctx.stroke();
+        // Globo
+        ctx.fillStyle = ball.color;
+        ctx.beginPath();
+        ctx.ellipse(sx, sy, 9, 11, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Brillo
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.ellipse(sx - 3, sy - 4, 2, 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Boquilla
+        ctx.fillStyle = '#444';
+        ctx.fillRect(sx - 1, sy + 9, 2, 2);
+    }
+    drawBalloonPop(ball, camera) {
+        const ctx = this.ctx;
+        const sx = ball.worldX - camera;
+        const t = ball.popTimer;
+        for (let i = 0; i < 8; i++) {
+            const a = (i / 8) * Math.PI * 2;
+            const r = t * 60;
+            ctx.fillStyle = ball.color;
+            ctx.globalAlpha = Math.max(0, 1 - t * 3);
+            ctx.fillRect(sx + Math.cos(a) * r - 2, ball.y + Math.sin(a) * r - 2, 4, 4);
+        }
+        ctx.globalAlpha = 1;
+    }
+    // -------------------------------------------------------
+    //   ÍTEMS (taza de té)
+    // -------------------------------------------------------
+    drawItem(item, camera) {
+        const ctx = this.ctx;
+        const x = item.worldX - camera;
+        const bob = Math.sin(item.bob) * 2;
+        const y = item.y + bob;
+        if (x < -50 || x > W + 50) return;
+        const flame = item.flameFrame;
+        ctx.fillStyle = COL.flameO;
+        ctx.fillRect(x - 4, y - 16, 8, 6);
+        ctx.fillStyle = COL.flameY;
+        if (flame === 0) ctx.fillRect(x - 2, y - 18, 4, 4);
+        else if (flame === 1) ctx.fillRect(x - 3, y - 17, 6, 4);
+        else ctx.fillRect(x - 1, y - 19, 2, 5);
+        ctx.fillStyle = COL.tCup;     ctx.fillRect(x - 8, y - 8, 16, 10);
+        ctx.fillStyle = COL.tCupHi;   ctx.fillRect(x - 8, y - 8, 3, 10);
+        ctx.fillStyle = COL.tCupLip;  ctx.fillRect(x - 9, y - 10, 18, 2);
+        ctx.fillStyle = COL.tTea;     ctx.fillRect(x - 7, y - 9, 14, 2);
+        ctx.fillStyle = COL.tCup;     ctx.fillRect(x + 8, y - 6, 3, 6);
+        ctx.fillStyle = COL.tCupLip;  ctx.fillRect(x - 10, y + 2, 20, 2);
+        ctx.fillStyle = COL.tCup;     ctx.fillRect(x - 9, y + 4, 18, 2);
+    }
+    // -------------------------------------------------------
+    //   HUD
+    // -------------------------------------------------------
+    drawHUD(game) {
+        const ctx = this.ctx;
+        // Fondo del HUD con gradiente sutil
+        const hg = ctx.createLinearGradient(0, 0, 0, 28);
+        hg.addColorStop(0, '#000');
+        hg.addColorStop(1, '#1a0033');
+        ctx.fillStyle = hg;
+        ctx.fillRect(0, 0, W, 28);
+        // Borde inferior amarillo
+        ctx.fillStyle = COL.hudYellow;
+        ctx.fillRect(0, 28, W, 1);
+        ctx.font = '11px "Press Start 2P", monospace';
+        ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+        const score = String(game.score).padStart(6, '0');
+        const hi    = String(game.highScore).padStart(6, '0');
+        const stg   = String(game.stageNum).padStart(2, '0');
+        ctx.fillStyle = COL.hudWhite;  ctx.fillText('1P', 10, 9);
+        ctx.fillStyle = COL.hudYellow; ctx.fillText(score, 38, 9);
+        ctx.fillStyle = COL.hudWhite;  ctx.fillText('REC', 180, 9);
+        ctx.fillStyle = COL.hudRed;    ctx.fillText(hi, 220, 9);
+        ctx.fillStyle = COL.hudCyan;   ctx.fillText('ACTO ' + stg, 360, 9);
+        ctx.fillStyle = COL.hudMagenta;
+        ctx.fillText('BONO ' + String(Math.max(0, Math.floor(game.bonus))).padStart(4, '0'), 470, 9);
+        for (let i = 0; i < game.lives; i++) this.drawLifeIcon(700 + i * 18, 12);
+
+        // ---- INDICADOR DE INVENCIBILIDAD ACTIVA ----
+        if (game.player.isInvincible()) {
+            const t = game.player.invincibleTimer;
+            const colors = ['#ff44aa', '#ffee00', '#00d4ff', '#33ff66'];
+            const c = colors[Math.floor(performance.now() / 80) % colors.length];
+            ctx.font = '11px "Press Start 2P", monospace';
+            ctx.fillStyle = '#000';
+            ctx.textAlign = 'left';
+            ctx.fillText('★ INVENCIBLE ' + Math.ceil(t) + 's', 11, 51);
+            ctx.fillStyle = c;
+            ctx.fillText('★ INVENCIBLE ' + Math.ceil(t) + 's', 10, 50);
+        }
+
+        // ---- COMBO indicator (debajo del HUD principal) ----
+        if (game.combo > 1) {
+            const mult = game.getMultiplier();
+            const pulse = 1 + Math.sin(performance.now() / 100) * 0.05;
+            ctx.save();
+            ctx.translate(W/2, 52);
+            ctx.scale(pulse, pulse);
+            ctx.textAlign = 'center';
+            ctx.font = '14px "Press Start 2P", monospace';
+            ctx.fillStyle = '#000';
+            ctx.fillText(`COMBO ${game.combo} x${mult}`, 2, 2);
+            ctx.fillStyle = mult >= 3 ? '#ff44aa' : '#ffee00';
+            ctx.fillText(`COMBO ${game.combo} x${mult}`, 0, 0);
+            ctx.restore();
+            ctx.textAlign = 'left';
+        }
+        const meters = Math.min(100, Math.floor(game.player.worldX / PX_PER_METER));
+        const boxW = 78, boxH = 22;
+        const bx = W - boxW - 10, by = H - boxH - 10;
+        ctx.fillStyle = '#000'; ctx.fillRect(bx, by, boxW, boxH);
+        ctx.strokeStyle = COL.hudRed; ctx.lineWidth = 2; ctx.strokeRect(bx, by, boxW, boxH);
+        ctx.fillStyle = COL.hudYellow;
+        ctx.textAlign = 'right';
+        ctx.font = '14px "Press Start 2P", monospace';
+        ctx.fillText(meters + 'M', bx + boxW - 8, by + 5);
+        ctx.textAlign = 'left';
+    }
+    drawLifeIcon(x, y) {
+        const ctx = this.ctx;
+        ctx.fillStyle = COL.cHair;  ctx.fillRect(x, y - 6, 12, 4);
+        ctx.fillStyle = COL.cFace;  ctx.fillRect(x, y - 2, 12, 8);
+        ctx.fillStyle = '#000';     ctx.fillRect(x + 3, y + 1, 2, 2); ctx.fillRect(x + 7, y + 1, 2, 2);
+        ctx.fillStyle = COL.hudRed; ctx.fillRect(x + 5, y + 4, 2, 1);
+    }
+    // -------------------------------------------------------
+    //   PANTALLAS DE INTERFAZ
+    // -------------------------------------------------------
+    drawTitleScreen(t) {
+        const ctx = this.ctx;
+        // Fondo con gradiente vertical (negro arriba, violeta profundo abajo)
+        const bg = ctx.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#000000');
+        bg.addColorStop(0.6, '#1a0033');
+        bg.addColorStop(1, '#330044');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+
+        // Estrellas titilantes detrás
+        this.drawStars(t);
+
+        // Marco de estrellas alternando colores
+        const starColors = [COL.hudRed, COL.hudOrange, COL.hudYellow, COL.hudCyan];
+        const left = 90, top = 90, right = W - 90, bottom = 260, step = 22;
+        const drawStarFrame = (x, y, idx) => {
+            const pulse = 1 + Math.sin(t * 4 + idx * 0.5) * 0.15;
+            ctx.fillStyle = starColors[idx % starColors.length];
+            this.drawTinyStar(x, y, 6 * pulse);
+        };
+        let idx = 0;
+        for (let x = left;  x <= right;  x += step) drawStarFrame(x, top, idx++);
+        for (let y = top+step; y <= bottom; y += step) drawStarFrame(right, y, idx++);
+        for (let x = right-step; x >= left; x -= step) drawStarFrame(x, bottom, idx++);
+        for (let y = bottom-step; y > top; y -= step) drawStarFrame(left, y, idx++);
+
+        ctx.textAlign = 'center';
+        // Título con Bungee + múltiples capas de sombra para efecto neón
+        ctx.font = '54px "Bungee", "Georgia", serif';
+        // Sombra roja
+        ctx.fillStyle = '#aa0000';
+        ctx.fillText('CIRCUS CHARLIE', W/2 + 4, 170 + 4);
+        // Sombra azul
+        ctx.fillStyle = '#005588';
+        ctx.fillText('CIRCUS CHARLIE', W/2 - 2, 170 - 2);
+        // Texto principal cian brillante
+        ctx.fillStyle = COL.hudCyan;
+        ctx.fillText('CIRCUS CHARLIE', W/2, 170);
+        // Outline blanco fino
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1;
+        ctx.strokeText('CIRCUS CHARLIE', W/2, 170);
+
+        ctx.font = '12px "Press Start 2P", monospace';
+        ctx.fillStyle = COL.hudYellow;
+        ctx.fillText('¡EL GRAN ESPECTÁCULO DEL CIRCO!', W/2, 215);
+
+        // Charlie+León a la izquierda, Charlie+Caballo a la derecha (animados)
+        this.drawCharlieLion(150, 390, Math.floor(t * 8) % 2);
+        this.drawCharlieHorse(W - 150, 390, Math.floor(t * 8 + 1) % 2);
+
+        // Mensaje principal con pulse animation
+        const pulse = 1 + Math.sin(t * 4) * 0.08;
+        if (Math.floor(t * 2) % 2 === 0) {
+            ctx.save();
+            ctx.translate(W/2, 320);
+            ctx.scale(pulse, pulse);
+            ctx.font = '18px "Press Start 2P", monospace';
+            ctx.fillStyle = '#000';
+            ctx.fillText('HAZ CLICK PARA EMPEZAR', 2, 2);
+            ctx.fillStyle = COL.hudYellow;
+            ctx.fillText('HAZ CLICK PARA EMPEZAR', 0, 0);
+            ctx.restore();
+        }
+
+        ctx.fillStyle = '#888';
+        ctx.font = '8px "Press Start 2P", monospace';
+        ctx.fillText('CONTENIDOS Y CREATIVIDAD 3 · UP · 2026', W/2, H - 18);
+        ctx.textAlign = 'left';
+    }
+    drawTinyStar(cx, cy, r) {
+        const ctx = this.ctx;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - r); ctx.lineTo(cx + r/3, cy - r/3);
+        ctx.lineTo(cx + r, cy); ctx.lineTo(cx + r/3, cy + r/3);
+        ctx.lineTo(cx, cy + r); ctx.lineTo(cx - r/3, cy + r/3);
+        ctx.lineTo(cx - r, cy); ctx.lineTo(cx - r/3, cy - r/3);
+        ctx.closePath(); ctx.fill();
+    }
+    drawHowToScreen(t) {
+        const ctx = this.ctx;
+        // Fondo gradiente
+        const bg = ctx.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#000');
+        bg.addColorStop(1, '#1a0033');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+
+        // Marco decorativo doble
+        ctx.strokeStyle = COL.hudYellow;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(70, 45, W - 140, H - 90);
+        ctx.strokeStyle = COL.hudMagenta;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(76, 51, W - 152, H - 102);
+
+        // Estrellas decorativas en las esquinas
+        const cornerColors = [COL.hudRed, COL.hudYellow, COL.hudCyan, COL.hudMagenta];
+        const corners = [[70,45],[W-70,45],[70,H-45],[W-70,H-45]];
+        for (let i = 0; i < 4; i++) {
+            ctx.fillStyle = cornerColors[i];
+            this.drawTinyStar(corners[i][0], corners[i][1], 8);
+        }
+
+        ctx.textAlign = 'center';
+        ctx.font = '24px "Bungee", monospace';
+        ctx.fillStyle = '#000';
+        ctx.fillText('CÓMO JUGAR', W/2 + 2, 92);
+        ctx.fillStyle = COL.hudYellow;
+        ctx.fillText('CÓMO JUGAR', W/2, 90);
+
+        ctx.fillStyle = COL.hudMagenta; ctx.fillRect(140, 115, W - 280, 2);
+
+        ctx.textAlign = 'left';
+        ctx.font = '12px "Press Start 2P", monospace';
+        ctx.fillStyle = COL.hudCyan;   ctx.fillText('CONTROLES', 130, 150);
+        ctx.fillStyle = COL.hudWhite;
+        ctx.font = '11px "Press Start 2P", monospace';
+        ctx.fillText('CLICK ............. SALTAR', 150, 178);
+        ctx.fillText('CLICK SOSTENIDO ... SALTO ALTO', 150, 200);
+
+        ctx.font = '12px "Press Start 2P", monospace';
+        ctx.fillStyle = COL.hudCyan;   ctx.fillText('3 ACTOS DEL CIRCO', 130, 238);
+        ctx.font = '11px "Press Start 2P", monospace';
+        ctx.fillStyle = COL.hudYellow; ctx.fillText('1>', 150, 262);
+        ctx.fillStyle = COL.hudWhite;  ctx.fillText('AROS DE FUEGO', 180, 262);
+        ctx.fillStyle = COL.hudYellow; ctx.fillText('2>', 150, 282);
+        ctx.fillStyle = COL.hudWhite;  ctx.fillText('VALLAS DE MADERA', 180, 282);
+        ctx.fillStyle = COL.hudYellow; ctx.fillText('3>', 150, 302);
+        ctx.fillStyle = COL.hudWhite;  ctx.fillText('¡EL DESAFÍO FINAL!', 180, 302);
+        // Items y obstáculos especiales
+        ctx.fillStyle = '#ffee00';     ctx.fillText('★', 150, 326);
+        ctx.fillStyle = COL.hudWhite;  ctx.fillText('ESTRELLA = ¡INVENCIBLE 5s!', 175, 326);
+        ctx.fillStyle = COL.hudYellow; ctx.fillText('^', 150, 346);
+        ctx.fillStyle = COL.hudWhite;  ctx.fillText('TRAMPOLÍN = ¡MEGA SALTO!', 175, 346);
+        ctx.fillStyle = COL.hudMagenta;
+        ctx.fillText('¡Recoge las tazas para sumar puntos!', 150, 372);
+
+        // Animación de pulse en "HAZ CLICK"
+        const pulse = 1 + Math.sin(t * 5) * 0.08;
+        if (Math.floor(t * 2) % 2 === 0) {
+            ctx.save();
+            ctx.translate(W/2, 405);
+            ctx.scale(pulse, pulse);
+            ctx.textAlign = 'center';
+            ctx.font = '16px "Press Start 2P", monospace';
+            ctx.fillStyle = '#000';
+            ctx.fillText('HAZ CLICK PARA EMPEZAR', 2, 2);
+            ctx.fillStyle = COL.hudYellow;
+            ctx.fillText('HAZ CLICK PARA EMPEZAR', 0, 0);
+            ctx.restore();
+        }
+        ctx.textAlign = 'left';
+    }
+    // -------------------------------------------------------
+    //   PANTALLA DE SELECCIÓN DE PERSONAJE
+    // -------------------------------------------------------
+    drawCharacterSelect(t, hoveredSide) {
+        const ctx = this.ctx;
+        // Fondo gradiente
+        const bg = ctx.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#000');
+        bg.addColorStop(0.5, '#1a0033');
+        bg.addColorStop(1, '#330044');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+        this.drawStars(t);
+
+        // ===== Título centrado =====
+        ctx.textAlign = 'center';
+        ctx.font = '26px "Bungee", monospace';
+        ctx.fillStyle = '#aa0044';
+        ctx.fillText('¡ELIGE A TU COMPAÑERO!', W/2 + 3, 55 + 3);
+        ctx.fillStyle = COL.hudYellow;
+        ctx.fillText('¡ELIGE A TU COMPAÑERO!', W/2, 55);
+        ctx.font = '11px "Press Start 2P", monospace';
+        ctx.fillStyle = COL.hudCyan;
+        ctx.fillText('¿CON QUIÉN VAS A SALIR A ESCENA?', W/2, 85);
+
+        // ★ Estrellitas decorativas a los lados del título
+        ctx.fillStyle = COL.hudYellow;
+        const titleStarSize = 5 + Math.sin(t * 5) * 1;
+        this.drawTinyStar(W/2 - 180, 55, titleStarSize);
+        this.drawTinyStar(W/2 + 180, 55, titleStarSize);
+
+        // ===== Dos tarjetas SIMÉTRICAS =====
+        const cardW = 240, cardH = 290;
+        const cardY = 110;
+        const totalCardsW = cardW * 2;
+        const totalGapsW = W - totalCardsW;
+        const sideGap = totalGapsW / 3;
+        const cardLionX = sideGap;
+        const cardHorseX = sideGap * 2 + cardW;
+
+        this.drawCharacterCard(cardLionX, cardY, cardW, cardH, 'EL LEÓN',
+                               hoveredSide === 'lion', t, 'lion', false);
+        this.drawCharacterCard(cardHorseX, cardY, cardW, cardH, 'EL CABALLO',
+                               hoveredSide === 'horse', t, 'horse', true);
+
+        // ===== Indicador "VS" centrado entre cards =====
+        // (RESETEAMOS textAlign explícitamente porque las cards lo cambian)
+        ctx.textAlign = 'center';
+        ctx.font = '28px "Bungee", monospace';
+        const vsY = cardY + cardH/2 + 10;
+        ctx.fillStyle = '#440000';
+        ctx.fillText('VS', W/2 + 3, vsY + 3);
+        ctx.fillStyle = '#ff44aa';
+        ctx.fillText('VS', W/2, vsY);
+
+        // ===== CTA inferior (centrado correctamente) =====
+        if (Math.floor(t * 2) % 2 === 0) {
+            const pulse = 1 + Math.sin(t * 5) * 0.06;
+            ctx.save();
+            ctx.translate(W/2, H - 30);
+            ctx.scale(pulse, pulse);
+            ctx.textAlign = 'center';  // ← FIX explícito del centrado
+            ctx.font = '12px "Press Start 2P", monospace';
+            ctx.fillStyle = '#000';
+            ctx.fillText('¡APUESTA POR TU CAMPEÓN!', 2, 2);
+            ctx.fillStyle = COL.hudWhite;
+            ctx.fillText('¡APUESTA POR TU CAMPEÓN!', 0, 0);
+            ctx.restore();
+        }
+        ctx.textAlign = 'left';
+    }
+
+    drawCharacterCard(x, y, w, h, label, isHovered, t, animal, mirror) {
+        const ctx = this.ctx;
+        // Fondo de la tarjeta
+        ctx.fillStyle = isHovered ? '#552266' : '#220033';
+        ctx.fillRect(x, y, w, h);
+        // Borde
+        ctx.strokeStyle = isHovered ? COL.hudYellow : '#553355';
+        ctx.lineWidth = isHovered ? 4 : 2;
+        ctx.strokeRect(x, y, w, h);
+        if (isHovered) {
+            ctx.save();
+            ctx.shadowColor = COL.hudYellow;
+            ctx.shadowBlur = 22 + Math.sin(t * 5) * 8;
+            ctx.strokeRect(x, y, w, h);
+            ctx.restore();
+        }
+        // Esquinas decorativas
+        ctx.fillStyle = COL.hudMagenta;
+        ctx.fillRect(x - 4, y - 4, 8, 8);
+        ctx.fillRect(x + w - 4, y - 4, 8, 8);
+        ctx.fillRect(x - 4, y + h - 4, 8, 8);
+        ctx.fillRect(x + w - 4, y + h - 4, 8, 8);
+
+        const cx = x + w/2;
+
+        // ===== LABEL (arriba) =====
+        ctx.textAlign = 'center';
+        ctx.font = '22px "Bungee", monospace';
+        ctx.fillStyle = '#000';
+        ctx.fillText(label, cx + 2, y + 36 + 2);
+        ctx.fillStyle = isHovered ? COL.hudYellow : COL.hudWhite;
+        ctx.fillText(label, cx, y + 36);
+
+        // Línea separadora bajo el label
+        ctx.fillStyle = isHovered ? COL.hudYellow : '#553355';
+        ctx.fillRect(x + 20, y + 50, w - 40, 1);
+
+        // ===== SPRITE (centrado, bobea) =====
+        // El sprite del león/caballo tiene la cola asomando hacia un lado,
+        // por eso lo desplazamos un poco para que esté visualmente centrado.
+        const bobY = Math.sin(t * 3) * 3;
+        const spriteCy = y + 200 + bobY;
+        const scale = isHovered ? 2.0 : 1.7;
+        const frame = Math.floor(t * 8) % 2;
+
+        ctx.save();
+        ctx.translate(cx, spriteCy);
+        ctx.scale(scale, scale);
+        // Mirror para que el de la derecha mire hacia el centro (face-off)
+        if (mirror) ctx.scale(-1, 1);
+        // Compensar el centro visual del sprite (cola extiende ~4 px a la der)
+        const visualOffsetX = -4;
+        if (animal === 'lion') {
+            this.drawCharlieLion(visualOffsetX, 0, frame);
+        } else {
+            this.drawCharlieHorse(visualOffsetX, 0, frame);
+        }
+        ctx.restore();
+
+        // ===== DESCRIPCIÓN (debajo del sprite) =====
+        ctx.textAlign = 'center';
+        ctx.font = '8px "Press Start 2P", monospace';
+        ctx.fillStyle = isHovered ? COL.hudCyan : '#aaa';
+        const desc = animal === 'lion'
+            ? ['¡EL REY DE LA SELVA!', 'FEROZ E INDOMABLE']
+            : ['¡VELOZ COMO EL RAYO!', 'NOBLE Y ELEGANTE'];
+        ctx.fillText(desc[0], cx, y + 230);
+        ctx.fillText(desc[1], cx, y + 246);
+
+        // ===== CTA hover (abajo, con centrado explícito) =====
+        if (isHovered) {
+            const pulseTxt = 1 + Math.sin(t * 6) * 0.05;
+            ctx.save();
+            ctx.translate(cx, y + h - 22);
+            ctx.scale(pulseTxt, pulseTxt);
+            ctx.textAlign = 'center';
+            ctx.font = '10px "Press Start 2P", monospace';
+            ctx.fillStyle = '#000';
+            ctx.fillText('¡ELIJO A ESTE!', 1, 1);
+            ctx.fillStyle = COL.hudYellow;
+            ctx.fillText('¡ELIJO A ESTE!', 0, 0);
+            ctx.restore();
+        }
+        ctx.textAlign = 'left';
+    }
+
+    drawStageStart(stageNum, t) {
+        const ctx = this.ctx;
+        const bg = ctx.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#000');
+        bg.addColorStop(1, '#220044');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+        this.drawStars(t);
+
+        ctx.textAlign = 'center';
+        ctx.fillStyle = COL.hudCyan;
+        ctx.font = '14px "Press Start 2P", monospace';
+        ctx.fillText('ACTO  ' + stageNum + '  DE  3', W/2, H/2 - 80);
+
+        ctx.font = '36px "Bungee", monospace';
+        ctx.fillStyle = '#aa0044';
+        ctx.fillText(this._stageTitle(stageNum), W/2 + 3, H/2 - 10 + 3);
+        ctx.fillStyle = COL.hudYellow;
+        ctx.fillText(this._stageTitle(stageNum), W/2, H/2 - 10);
+
+        ctx.fillStyle = COL.hudWhite;
+        ctx.font = '10px "Press Start 2P", monospace';
+        const hints = {
+            1: '¡CLICK PARA SALTAR! MANTÉN PARA SALTOS MÁS ALTOS',
+            2: '¡SALTA LAS VALLAS! AHORA SOS MÁS VELOZ',
+            3: '¡EL DESAFÍO FINAL! AROS Y VALLAS A TODA VELOCIDAD'
+        };
+        ctx.fillText(hints[stageNum] || '', W/2, H/2 + 35);
+
+        if (Math.floor(t * 2) % 2 === 0) {
+            const pulse = 1 + Math.sin(t * 6) * 0.1;
+            ctx.save();
+            ctx.translate(W/2, H/2 + 95);
+            ctx.scale(pulse, pulse);
+            ctx.font = '28px "Bungee", monospace';
+            ctx.fillStyle = '#660066';
+            ctx.fillText('¡LISTO!', 3, 3);
+            ctx.fillStyle = COL.hudMagenta;
+            ctx.fillText('¡LISTO!', 0, 0);
+            ctx.restore();
+        }
+        ctx.textAlign = 'left';
+    }
+    _stageTitle(n) {
+        const titles = {
+            1: 'AROS DE FUEGO',
+            2: 'VALLAS DE MADERA',
+            3: 'EL GRAN FINAL'
+        };
+        return titles[n] || '';
+    }
+    drawStageClear(stageNum, t, bonusGiven) {
+        const ctx = this.ctx;
+        const bg = ctx.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#000');
+        bg.addColorStop(1, '#003322');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, W, H);
+        // Confeti animado en el fondo
+        for (let i = 0; i < 40; i++) {
+            const a = (i / 40 + t * 0.1) % 1;
+            const x = (a * W * 1.3 + i * 137) % W;
+            const y = ((t * 60 + i * 79) % H);
+            const colors = [COL.hudYellow, COL.hudMagenta, COL.hudCyan, COL.hudOrange, COL.hudGreen];
+            ctx.fillStyle = colors[i % colors.length];
+            ctx.globalAlpha = 0.6;
+            ctx.fillRect(x, y, 4, 4);
+        }
+        ctx.globalAlpha = 1;
+        ctx.textAlign = 'center';
+        ctx.font = '34px "Bungee", monospace';
+        ctx.fillStyle = '#003311';
+        ctx.fillText('¡ACTO ' + stageNum + ' COMPLETO!', W/2 + 3, H/2 - 60 + 3);
+        ctx.fillStyle = COL.hudGreen;
+        ctx.fillText('¡ACTO ' + stageNum + ' COMPLETO!', W/2, H/2 - 60);
+
+        ctx.font = '18px "Press Start 2P", monospace';
+        ctx.fillStyle = COL.hudYellow;
+        ctx.fillText('BONO  +' + bonusGiven, W/2, H/2 - 5);
+
+        ctx.fillStyle = COL.hudMagenta;
+        ctx.font = '11px "Press Start 2P", monospace';
+        const msg = stageNum < 3
+            ? '¡TE FALTAN ' + (3 - stageNum) + ' ACTO(S) PARA EL FINAL!'
+            : '¡COMPLETASTE TODO EL ESPECTÁCULO!';
+        ctx.fillText(msg, W/2, H/2 + 35);
+        if (Math.floor(t * 2) % 2 === 0) {
+            ctx.fillStyle = COL.hudCyan;
+            ctx.font = '12px "Press Start 2P", monospace';
+            ctx.fillText('¡PREPÁRATE PARA EL SIGUIENTE ACTO!', W/2, H/2 + 80);
+        }
+        ctx.textAlign = 'left';
+    }
+    drawGameOver(score, highScore, t, completed) {
+        const ctx = this.ctx;
+        ctx.textAlign = 'center';
+        if (completed) {
+            // ====== PANTALLA DE PREMIO (victoria) ======
+            // Fondo dorado festivo
+            const bg = ctx.createRadialGradient(W/2, H/2, 50, W/2, H/2, 500);
+            bg.addColorStop(0, '#553311');
+            bg.addColorStop(0.6, '#220a05');
+            bg.addColorStop(1, '#000');
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, W, H);
+
+            // Confeti animado cayendo
+            for (let i = 0; i < 60; i++) {
+                const colors = [COL.hudYellow, COL.hudMagenta, COL.hudCyan, COL.hudOrange, COL.hudGreen, '#fff'];
+                const x = (i * 87 + t * 30) % W;
+                const y = ((t * 80 + i * 113) % (H + 40)) - 20;
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.globalAlpha = 0.7;
+                ctx.fillRect(x, y, 4, 4);
+            }
+            ctx.globalAlpha = 1;
+
+            // Marco festivo con estrellas rotando
+            const sc = [COL.hudYellow, COL.hudOrange, COL.hudMagenta, COL.hudCyan];
+            for (let i = 0; i < 20; i++) {
+                const a = (i / 20) * Math.PI * 2 + t * 0.4;
+                const rad = 235;
+                const px = W/2 + Math.cos(a) * rad;
+                const py = H/2 + Math.sin(a) * rad * 0.5;
+                const pulse = 1 + Math.sin(t * 4 + i) * 0.3;
+                ctx.fillStyle = sc[i % sc.length];
+                this.drawTinyStar(px, py, 7 * pulse);
+            }
+
+            // Título "¡GANASTE!"
+            ctx.font = '56px "Bungee", monospace';
+            ctx.fillStyle = '#003311';
+            ctx.fillText('¡GANASTE!', W/2 + 4, 110 + 4);
+            ctx.fillStyle = COL.hudGreen;
+            ctx.fillText('¡GANASTE!', W/2, 110);
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
+            ctx.strokeText('¡GANASTE!', W/2, 110);
+
+            ctx.font = '14px "Press Start 2P", monospace';
+            ctx.fillStyle = COL.hudYellow;
+            ctx.fillText('★ ERES LA ESTRELLA DEL CIRCO ★', W/2, 155);
+
+            // Caja del premio
+            ctx.fillStyle = '#220033';
+            ctx.fillRect(W/2 - 220, 190, 440, 115);
+            ctx.strokeStyle = COL.hudYellow;
+            ctx.lineWidth = 4;
+            ctx.strokeRect(W/2 - 220, 190, 440, 115);
+            ctx.strokeStyle = COL.hudMagenta;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(W/2 - 215, 195, 430, 105);
+
+            ctx.fillStyle = COL.hudMagenta;
+            ctx.font = '16px "Press Start 2P", monospace';
+            ctx.fillText('¡COMPLETASTE EL CIRCO!', W/2, 220);
+            ctx.fillStyle = COL.hudWhite;
+            ctx.font = '11px "Press Start 2P", monospace';
+            ctx.fillText('¡PROEZA DIGNA DE UNA', W/2, 252);
+            ctx.fillText('VERDADERA ESTRELLA!', W/2, 274);
+
+            // Stats
+            ctx.fillStyle = COL.hudYellow;
+            ctx.font = '12px "Press Start 2P", monospace';
+            ctx.fillText('PUNTAJE: ' + String(score).padStart(6, '0'), W/2 - 110, 335);
+            ctx.fillStyle = COL.hudCyan;
+            ctx.fillText('COMBO MAX: x' + (window.game ? window.game.maxCombo : 0), W/2 + 110, 335);
+            ctx.fillStyle = '#aaa';
+            ctx.font = '9px "Press Start 2P", monospace';
+            ctx.fillText('Récord: ' + String(highScore).padStart(6, '0'), W/2, 360);
+
+            // CTA — solo aparece después de 5s (cuando el click funciona)
+            if (t < 5) {
+                ctx.fillStyle = '#888';
+                ctx.font = '10px "Press Start 2P", monospace';
+                ctx.fillText('¡DISFRUTÁ TU VICTORIA!   ' + Math.ceil(5 - t) + 's', W/2, 410);
+            } else if (Math.floor(t * 2) % 2 === 0) {
+                const pulse = 1 + Math.sin(t * 5) * 0.06;
+                ctx.save();
+                ctx.translate(W/2, 410);
+                ctx.scale(pulse, pulse);
+                ctx.textAlign = 'center';
+                ctx.font = '12px "Press Start 2P", monospace';
+                ctx.fillStyle = '#000';
+                ctx.fillText('¡CLICK PARA JUGAR DE NUEVO!', 2, 2);
+                ctx.fillStyle = COL.hudWhite;
+                ctx.fillText('¡CLICK PARA JUGAR DE NUEVO!', 0, 0);
+                ctx.restore();
+            }
+        } else {
+            // ====== PANTALLA DE DERROTA ======
+            const bg = ctx.createRadialGradient(W/2, H/2, 50, W/2, H/2, 500);
+            bg.addColorStop(0, '#330000');
+            bg.addColorStop(1, '#000');
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, W, H);
+
+            ctx.font = '60px "Bungee", monospace';
+            ctx.fillStyle = '#440000';
+            ctx.fillText('¡UPS!', W/2 + 4, 110 + 4);
+            ctx.fillStyle = COL.hudRed;
+            ctx.fillText('¡UPS!', W/2, 110);
+
+            ctx.fillStyle = COL.hudOrange;
+            ctx.font = '13px "Press Start 2P", monospace';
+            ctx.fillText('¡CHARLIE NO LLEGÓ A LA META!', W/2, 155);
+            ctx.fillStyle = COL.hudWhite;
+            ctx.font = '11px "Press Start 2P", monospace';
+            ctx.fillText('¡PERO LO INTENTÓ CON TODO!', W/2, 182);
+
+            // Caja
+            ctx.fillStyle = '#110000';
+            ctx.fillRect(W/2 - 220, 215, 440, 95);
+            ctx.strokeStyle = COL.hudRed;
+            ctx.lineWidth = 3;
+            ctx.strokeRect(W/2 - 220, 215, 440, 95);
+
+            ctx.fillStyle = COL.hudYellow;
+            ctx.font = '14px "Press Start 2P", monospace';
+            ctx.fillText('PUNTAJE: ' + String(score).padStart(6, '0'), W/2, 248);
+            ctx.fillStyle = COL.hudMagenta;
+            ctx.font = '11px "Press Start 2P", monospace';
+            ctx.fillText('COMBO MAX: x' + (window.game ? window.game.maxCombo : 0), W/2, 275);
+            ctx.fillStyle = '#aaa';
+            ctx.font = '9px "Press Start 2P", monospace';
+            ctx.fillText('Récord: ' + String(highScore).padStart(6, '0'), W/2, 297);
+
+            ctx.fillStyle = COL.hudWhite;
+            ctx.font = '12px "Press Start 2P", monospace';
+            ctx.fillText('¡EL CIRCO TE ESPERA OTRA VEZ!', W/2, 345);
+
+            // CTA — solo aparece después de 5s
+            if (t < 5) {
+                ctx.fillStyle = '#888';
+                ctx.font = '10px "Press Start 2P", monospace';
+                ctx.fillText('TÓMATE UN RESPIRO...   ' + Math.ceil(5 - t) + 's', W/2, 400);
+            } else if (Math.floor(t * 2) % 2 === 0) {
+                const pulse = 1 + Math.sin(t * 5) * 0.06;
+                ctx.save();
+                ctx.translate(W/2, 400);
+                ctx.scale(pulse, pulse);
+                ctx.textAlign = 'center';
+                ctx.font = '12px "Press Start 2P", monospace';
+                ctx.fillStyle = '#000';
+                ctx.fillText('¡CLICK PARA INTENTARLO DE NUEVO!', 2, 2);
+                ctx.fillStyle = COL.hudCyan;
+                ctx.fillText('¡CLICK PARA INTENTARLO DE NUEVO!', 0, 0);
+                ctx.restore();
+            }
+        }
+        ctx.textAlign = 'left';
+    }
+}
+
+// =================== JUEGO PRINCIPAL =========================
+class Game {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.renderer = new Renderer(canvas);
+        this.input = new InputHandler(canvas);
+        this.audio = new AudioMgr();
+        this.music = new MusicPlayer(this.audio);
+        this.particles = new ParticleSystem();
+        this.effects = new Effects();
+        this.state = 'title';
+        this.stateTime = 0;
+        this.elapsed = 0;
+        this.lastDt = 0;
+        // Animal seleccionado por el jugador en la pantalla de selección
+        this.selectedAnimal = 'lion';   // 'lion' o 'horse'
+        this.hoveredSide = null;        // para feedback visual del hover
+        this.player = new Player();
+        this.stageNum = 1;
+        this.stage = new Stage(1);
+        this.score = 0;
+        this.highScore = this.loadHi();
+        this.bonus = 5000;
+        this.lives = 3;
+        this.lastMeterTick = 0;
+        this.completed = false;
+        this.deathDelay = 0;
+        this.lastBonusGiven = 0;
+        // ---- COMBO SYSTEM ----
+        this.combo = 0;
+        this.maxCombo = 0;
+        this.comboTimer = 0;
+        this.lastShownMultiplier = 1;
+        this.comboDisplayValue = 0;
+        this.comboDisplayTimer = 0;
+        // ---- MILESTONES (25M, 50M, 75M) ----
+        this.lastMilestone = 0;
+        this.milestoneTimer = 0;
+        this.milestoneText = '';
+        // ---- CLIMAX ----
+        this.climaxAnnounced = false;
+        this.climaxTimer = 0;
+    }
+    showMilestone(text) {
+        this.milestoneText = text;
+        this.milestoneTimer = 2.0;
+        this.effects.flash(0.15, '#ffee00');
+        this.particles.confetti(this.player.worldX, 80, 30);
+    }
+    getMultiplier() {
+        // x1 (combo 0-2), x2 (3-5), x3 (6-8), x4 (9-11), x5 (12+)
+        return Math.min(5, 1 + Math.floor(this.combo / 3));
+    }
+    onPassSuccess(eventX, eventY, basePoints) {
+        this.combo++;
+        this.comboTimer = 3.5;
+        if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+        const mult = this.getMultiplier();
+        this.score += basePoints * mult;
+        // ¿Subió de nivel el multiplicador?
+        if (mult > this.lastShownMultiplier) {
+            this.lastShownMultiplier = mult;
+            this.comboDisplayValue = mult;
+            this.comboDisplayTimer = 1.2;
+            this.effects.flash(0.18, '#ffee00');
+            this.particles.comboBurst(eventX, eventY);
+            this.audio.cheer();
+        }
+        // Confeti de pase normal
+        this.particles.confetti(eventX, eventY, 14);
+        this.audio.pass();
+    }
+    resetCombo() {
+        this.combo = 0;
+        this.comboTimer = 0;
+        this.lastShownMultiplier = 1;
+    }
+    loadHi() {
+        try { return parseInt(localStorage.getItem('circus_hi') || '20000', 10) || 20000; }
+        catch (e) { return 20000; }
+    }
+    saveHi() {
+        try { localStorage.setItem('circus_hi', String(this.highScore)); }
+        catch (e) {}
+    }
+    setState(s) { this.state = s; this.stateTime = 0; }
+    currentSpeed() {
+        if (this.stageNum === 1) return RUN_SPEED_STAGE1;
+        if (this.stageNum === 2) return RUN_SPEED_STAGE2;
+        return RUN_SPEED_STAGE3;
+    }
+    update(dt) {
+        this.stateTime += dt;
+        this.elapsed += dt;
+        this.lastDt = dt;
+        // Efectos (shake, flash, slowmo) actualizan siempre
+        this.effects.update(dt);
+        // Slow-motion afecta el dt del gameplay
+        const gameDt = dt * this.effects.getSlowFactor();
+
+        if (this.state === 'title') {
+            // Pantalla de título: 10 segundos antes de auto-avanzar.
+            // El usuario puede saltar con click después de 1 segundo
+            // (para que la pantalla no se salte por error al primer click).
+            if (this.stateTime > 10) {
+                this.setState('howto');
+            } else if (this.stateTime > 1 && this.input.jumpPressed()) {
+                this.setState('howto');
+            }
+        }
+        else if (this.state === 'howto') {
+            if (this.stateTime > 1 && this.input.jumpPressed()) {
+                this.setState('characterSelect');
+            }
+        }
+        else if (this.state === 'characterSelect') {
+            // Detecta hover según mouse X
+            this.hoveredSide = this.input.mouseX < W/2 ? 'lion' : 'horse';
+            if (this.stateTime > 0.5 && this.input.jumpPressed()) {
+                // Click en lado izq = león, lado der = caballo
+                this.selectedAnimal = this.input.mouseX < W/2 ? 'lion' : 'horse';
+                this.startStage(1);
+            }
+        }
+        else if (this.state === 'stageStart') {
+            // "ACTO X READY" — 3 segundos de anuncio
+            if (this.stateTime > 3) {
+                this.setState('playing');
+                const bpms = { 1: 120, 2: 140, 3: 160 };
+                this.music.setBPM(bpms[this.stageNum] || 130);
+                this.music.start();
+            }
+        }
+        else if (this.state === 'playing') {
+            const runSpeed = this.currentSpeed();
+            this.player.update(gameDt, this.input, this.audio, runSpeed);
+            this.stage.update(gameDt);
+            this.particles.update(dt);   // partículas en tiempo real
+
+            this.bonus -= 50 * gameDt;
+            if (this.bonus < 0) this.bonus = 0;
+
+            // Combo timer: si pasa demasiado tiempo sin evento, se rompe
+            if (this.combo > 0) {
+                this.comboTimer -= dt;
+                if (this.comboTimer <= 0) this.resetCombo();
+            }
+            // Display del combo decae
+            if (this.comboDisplayTimer > 0) this.comboDisplayTimer -= dt;
+
+            // POLVO al aterrizar
+            if (this.player.justLanded) {
+                this.particles.dust(this.player.worldX, GROUND_Y, 6);
+            }
+
+            // Decay del milestone display
+            if (this.milestoneTimer > 0) this.milestoneTimer -= dt;
+
+            // ============ DETECCIÓN DE MILESTONES (25M, 50M, 75M) ============
+            const currentM = Math.floor(this.player.worldX / PX_PER_METER);
+            const milestones = [
+                { m: 25, text: '¡VAS BIEN!' },
+                { m: 50, text: '¡MITAD!' },
+                { m: 75, text: '¡CASI LLEGAS!' }
+            ];
+            for (const ms of milestones) {
+                if (currentM >= ms.m && this.lastMilestone < ms.m) {
+                    this.lastMilestone = ms.m;
+                    this.showMilestone(ms.text);
+                }
+            }
+
+            // ============ DETECCIÓN DEL CLIMAX (mini-boss) ===========
+            if (!this.climaxAnnounced && this.stage.climaxStartX &&
+                this.player.worldX >= this.stage.climaxStartX - 300) {
+                this.climaxAnnounced = true;
+                this.climaxTimer = 2.5;
+                this.effects.flash(0.2, '#ff0033');
+                this.particles.confetti(this.player.worldX + 200, 100, 25);
+            }
+            if (this.climaxTimer > 0) this.climaxTimer -= dt;
+
+            // ============ COLISIÓN CON POWER-UPS (estrella) ============
+            const pbForPowerups = this.player.getWorldBounds();
+            for (const pu of this.stage.powerups) {
+                if (pu.collected) continue;
+                if (aabbOverlap(pbForPowerups, pu.getWorldBounds())) {
+                    pu.collected = true;
+                    this.player.grantInvincibility(5);
+                    this.score += 300;
+                    this.effects.flash(0.3, '#ffee00');
+                    this.particles.comboBurst(pu.worldX, pu.y);
+                    this.audio.collect();
+                }
+            }
+
+            // ============ COLISIÓN CON TRAMPOLINES ============
+            for (const tr of this.stage.trampolines) {
+                if (this.player.y >= GROUND_Y - 2 && aabbOverlap(pbForPowerups, tr.getZone())) {
+                    // Solo activa si Charlie está cayendo o tocando el suelo
+                    if (this.player.onGround || this.player.vy > 0) {
+                        this.player.superJump(-650);
+                        tr.bounce();
+                        this.particles.sparks(tr.worldX, GROUND_Y - 10, 14);
+                        this.audio.jump();
+                    }
+                }
+            }
+
+            // ============ COLISIÓN CON GLOBOS ============
+            for (const ball of this.stage.balloons) {
+                if (ball.popped) continue;
+                if (aabbOverlap(pbForPowerups, ball.getWorldBounds())) {
+                    ball.popped = true;
+                    this.score += 50 * this.getMultiplier();
+                    this.particles.confetti(ball.worldX, ball.y, 12);
+                    this.audio.collect();
+                }
+            }
+
+            // ============ COLISIÓN AROS DE FUEGO ============
+            const pb = this.player.getWorldBounds();
+            const camera = this.player.worldX - PLAYER_SCREEN_X;
+            for (const hoop of this.stage.hoops) {
+                if (hoop.processed) continue;
+                if (this.player.worldX >= hoop.worldX) {
+                    hoop.processed = true;
+                    const collided = aabbOverlap(pb, hoop.getBottomRimCollision());
+                    if (collided && !this.player.isInvincible()) {
+                        hoop.hit = true;
+                        this.onPlayerDeath();
+                    } else {
+                        // Pasó limpio o atravesó invencible
+                        this.particles.sparks(hoop.worldX, hoop.centerY, collided ? 16 : 12);
+                        this.onPassSuccess(hoop.worldX, hoop.centerY, collided ? 400 : 200);
+                    }
+                }
+            }
+
+            // ============ COLISIÓN VALLAS ============
+            for (const hurdle of this.stage.hurdles) {
+                if (hurdle.processed) continue;
+                if (this.player.worldX >= hurdle.worldX) {
+                    hurdle.processed = true;
+                    const collided = aabbOverlap(pb, hurdle.getCollision());
+                    if (collided && !this.player.isInvincible()) {
+                        hurdle.hit = true;
+                        this.onPlayerDeath();
+                    } else {
+                        this.onPassSuccess(hurdle.worldX, GROUND_Y - hurdle.height,
+                                           collided ? 300 : 150);
+                    }
+                }
+            }
+
+            // ============ RECOLECCIÓN DE ÍTEMS ===============
+            for (const item of this.stage.items) {
+                if (!item.collected && aabbOverlap(pb, item.getWorldBounds())) {
+                    item.collected = true;
+                    this.score += 100 * this.getMultiplier();
+                    this.audio.collect();
+                    this.particles.stars(item.worldX, item.y, 10);
+                }
+            }
+
+            // ============ PUNTOS POR METRO RECORRIDO =========
+            const m = Math.floor(this.player.worldX / PX_PER_METER);
+            if (m > this.lastMeterTick) {
+                this.score += 10 * (m - this.lastMeterTick);
+                this.lastMeterTick = m;
+            }
+
+            // ============ MUERTE / RESPAWN ===================
+            if (this.player.dead) {
+                this.deathDelay -= dt;
+                if (this.deathDelay <= 0) {
+                    this.lives -= 1;
+                    if (this.lives <= 0) {
+                        if (this.score > this.highScore) {
+                            this.highScore = this.score;
+                            this.saveHi();
+                        }
+                        this.completed = false;
+                        this.music.stop();
+                        this.setState('gameOver');
+                    } else {
+                        this.player.reset();
+                        this.player.worldX = Math.max(0, this.lastMeterTick * PX_PER_METER - 120);
+                    }
+                }
+            }
+
+            // ============ FIN DE NIVEL ========================
+            if (this.player.worldX >= STAGE_LENGTH_PX) {
+                this.lastBonusGiven = Math.floor(this.bonus);
+                this.score += this.lastBonusGiven;
+                this.audio.stageClear();
+                this.music.stop();
+                this.setState('stageClear');
+            }
+        }
+        else if (this.state === 'stageClear') {
+            // "¡ACTO X COMPLETO!" — 4 segundos para celebrar
+            if (this.stateTime > 4) {
+                if (this.stageNum >= 3) {
+                    // ¡Terminó los 3 niveles!
+                    if (this.score > this.highScore) {
+                        this.highScore = this.score;
+                        this.saveHi();
+                    }
+                    this.completed = true;
+                    this.setState('gameOver');
+                } else {
+                    this.startStage(this.stageNum + 1);
+                }
+            }
+        }
+        else if (this.state === 'gameOver') {
+            // Pantalla final: MÍNIMO 5 segundos visibles (que el público lo vea),
+            // luego click para que pase el próximo participante.
+            // Si nadie clickea, se queda hasta que alguien lo haga.
+            if (this.stateTime > 5 && this.input.jumpPressed()) this.restart();
+        }
+    }
+    onPlayerDeath() {
+        this.player.die(this.audio);
+        this.deathDelay = 1.4;
+        // Juice de impacto
+        this.effects.shake(0.6, 8);
+        this.effects.flash(0.3, '#ff0000');
+        this.effects.slowMo(0.5);
+        this.particles.deathBurst(this.player.worldX, this.player.y - 25);
+        this.resetCombo();
+    }
+    startStage(num) {
+        this.stageNum = num;
+        this.stage = new Stage(num);
+        this.player.reset();
+        this.bonus = 5000;
+        this.lastMeterTick = 0;
+        this.deathDelay = 0;
+        this.particles.clear();
+        this.resetCombo();
+        this.music.stop();
+        // Reset milestones y climax para el nuevo nivel
+        this.lastMilestone = 0;
+        this.milestoneTimer = 0;
+        this.climaxAnnounced = false;
+        this.climaxTimer = 0;
+        this.setState('stageStart');
+    }
+    restart() {
+        this.player = new Player();
+        this.stageNum = 1;
+        this.stage = new Stage(1);
+        this.score = 0;
+        this.bonus = 5000;
+        this.lives = 3;
+        this.lastMeterTick = 0;
+        this.deathDelay = 0;
+        this.completed = false;
+        this.particles.clear();
+        this.resetCombo();
+        this.maxCombo = 0;
+        this.music.stop();
+        this.setState('title');
+    }
+    render() {
+        const r = this.renderer;
+        if (this.state === 'title')      { r.drawTitleScreen(this.stateTime); return; }
+        if (this.state === 'howto')      { r.drawHowToScreen(this.stateTime); return; }
+        if (this.state === 'characterSelect') {
+            r.drawCharacterSelect(this.stateTime, this.hoveredSide);
+            return;
+        }
+        if (this.state === 'stageStart') { r.drawStageStart(this.stageNum, this.stateTime); return; }
+        if (this.state === 'stageClear') { r.drawStageClear(this.stageNum, this.stateTime, this.lastBonusGiven); return; }
+        if (this.state === 'gameOver')   { r.drawGameOver(this.score, this.highScore, this.stateTime, this.completed); return; }
+
+        const camera = this.player.worldX - PLAYER_SCREEN_X;
+        const ctx = r.ctx;
+
+        // ---- Aplicar SCREEN SHAKE (offset global) ----
+        const shake = this.effects.getShake();
+        ctx.save();
+        ctx.translate(shake.x, shake.y);
+
+        r.drawBackground(camera, this.stageNum, this.elapsed, this.lastDt);
+        // META al final del nivel
+        r.drawGoal(camera, STAGE_LENGTH_PX, this.elapsed);
+        // Trampolines y vallas (siempre detrás del player)
+        for (const tr of this.stage.trampolines) r.drawTrampoline(tr, camera);
+        for (const hurdle of this.stage.hurdles) r.drawHurdle(hurdle, camera);
+        // ★ MITAD TRASERA de los aros (Charlie va a quedar "dentro")
+        for (const hoop of this.stage.hoops) r.drawHoopHalf(hoop, camera, 'back');
+        // Items y power-ups
+        for (const item of this.stage.items) if (!item.collected) r.drawItem(item, camera);
+        for (const pu of this.stage.powerups) if (!pu.collected) r.drawPowerUp(pu, camera);
+
+        // Sprite del jinete: usa el animal seleccionado por el jugador
+        const useHorse = this.selectedAnimal === 'horse';
+        if (this.player.dead) {
+            r.drawCharlieDeath(PLAYER_SCREEN_X, this.player.y, this.player.deathTimer, useHorse);
+        } else {
+            // INVENCIBILIDAD: parpadeo arcoíris alrededor
+            const inv = this.player.isInvincible();
+            if (inv) {
+                const colors = ['#ff44aa', '#ffee00', '#00d4ff', '#33ff66'];
+                const c = colors[Math.floor(this.elapsed * 12) % colors.length];
+                ctx.save();
+                ctx.shadowColor = c;
+                ctx.shadowBlur = 20;
+                if (useHorse) r.drawCharlieHorse(PLAYER_SCREEN_X, this.player.y, this.player.runAnim);
+                else r.drawCharlieLion(PLAYER_SCREEN_X, this.player.y, this.player.runAnim);
+                ctx.restore();
+                // Aura de estrellas que rota
+                for (let i = 0; i < 5; i++) {
+                    const a = (i / 5) * Math.PI * 2 + this.elapsed * 6;
+                    ctx.fillStyle = colors[i % colors.length];
+                    r.drawTinyStar(
+                        PLAYER_SCREEN_X + Math.cos(a) * 40,
+                        this.player.y - 30 + Math.sin(a) * 35, 5
+                    );
+                }
+            } else if (useHorse) {
+                r.drawCharlieHorse(PLAYER_SCREEN_X, this.player.y, this.player.runAnim);
+            } else {
+                r.drawCharlieLion(PLAYER_SCREEN_X, this.player.y, this.player.runAnim);
+            }
+
+        }
+
+        // ★ MITAD DELANTERA de los aros (encima de Charlie = pasa POR DENTRO)
+        for (const hoop of this.stage.hoops) r.drawHoopHalf(hoop, camera, 'front');
+
+        // ---- PARTÍCULAS (encima del juego, debajo del HUD) ----
+        this.particles.draw(ctx, camera);
+
+        ctx.restore();
+
+        // ---- FLASH global (no afectado por shake) ----
+        this.effects.drawFlash(ctx);
+
+        // ---- HUD (siempre arriba) ----
+        r.drawHUD(this);
+
+        // ---- MILESTONE ANNOUNCEMENT (25M, 50M, 75M) ----
+        // Posicionado MÁS ABAJO para no taparse con el combo indicator (y=52)
+        if (this.milestoneTimer > 0) {
+            const alpha = Math.min(1, this.milestoneTimer);
+            const slide = (1 - Math.min(1, this.milestoneTimer / 0.4)) * -30;
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.translate(W/2, 115 + slide);
+            ctx.textAlign = 'center';
+            ctx.font = '36px "Bungee", monospace';
+            ctx.fillStyle = '#aa0044';
+            ctx.fillText(this.milestoneText, 3, 3);
+            ctx.fillStyle = '#ffee00';
+            ctx.fillText(this.milestoneText, 0, 0);
+            ctx.restore();
+            ctx.globalAlpha = 1;
+            ctx.textAlign = 'left';
+        }
+
+        // ---- CLIMAX ANNOUNCEMENT (mini-boss) ----
+        if (this.climaxTimer > 0) {
+            const alpha = Math.min(1, this.climaxTimer / 0.5);
+            const pulse = 1 + Math.sin(this.elapsed * 10) * 0.1;
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.translate(W/2, H/2 - 80);
+            ctx.scale(pulse, pulse);
+            ctx.textAlign = 'center';
+            const titles = {
+                1: '¡EL DOMADOR!',
+                2: '¡CABALLO BRAVO!',
+                3: '¡MAESTRO DE CEREMONIAS!'
+            };
+            ctx.font = '40px "Bungee", monospace';
+            ctx.fillStyle = '#440000';
+            ctx.fillText(titles[this.stageNum] || '¡FINAL!', 4, 4);
+            ctx.fillStyle = '#ff3344';
+            ctx.fillText(titles[this.stageNum] || '¡FINAL!', 0, 0);
+            // Subtítulo
+            ctx.font = '12px "Press Start 2P", monospace';
+            ctx.fillStyle = COL.hudYellow;
+            ctx.fillText('¡EL GRAN FINAL!', 0, 32);
+            ctx.restore();
+            ctx.globalAlpha = 1;
+            ctx.textAlign = 'left';
+        }
+
+        // ---- COMBO DISPLAY animado ----
+        if (this.comboDisplayTimer > 0) {
+            const alpha = Math.min(1, this.comboDisplayTimer * 2);
+            const scale = 1 + (1 - this.comboDisplayTimer / 1.2) * 0.5;
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.translate(W/2, H/2 - 50);
+            ctx.scale(scale, scale);
+            ctx.textAlign = 'center';
+            ctx.font = '52px "Bungee", monospace';
+            ctx.fillStyle = '#aa0044';
+            ctx.fillText('COMBO x' + this.comboDisplayValue, 4, 4);
+            ctx.fillStyle = '#ffee00';
+            ctx.fillText('COMBO x' + this.comboDisplayValue, 0, 0);
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
+            ctx.strokeText('COMBO x' + this.comboDisplayValue, 0, 0);
+            ctx.restore();
+            ctx.globalAlpha = 1;
+            ctx.textAlign = 'left';
+        }
+    }
+}
+
+// =================== MAIN LOOP ===============================
+const canvas = document.getElementById('game');
+const game = new Game(canvas);
+window.game = game;     // accesible para el HUD de game over
+let lastT = 0;
+function loop(now) {
+    if (!lastT) lastT = now;
+    const dt = Math.min((now - lastT) / 1000, 1/30);
+    lastT = now;
+    game.update(dt);
+    game.render();
+    requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+
+<!--
+=================================================================
+            NOTAS DE ARQUITECTURA — Versión 3 (es-LA)
+=================================================================
+
+## CAMBIOS DESDE LA V2
+
+1. AROS MÁS GRANDES Y MÁS FÁCILES DE PASAR
+   - Visual:    70 × 110 px (antes 45 × 70)   → un ~55% más grande
+   - Colisión:  32 × 50  px (antes 34 × 54)   → un poco menor
+   - Gap visual↔colisión: 54% en ancho, 55% en alto → mucho más
+     "forgiveness". El jugador puede tocar visualmente el aro y
+     seguir vivo.
+   - Solo el rim INFERIOR mata (overshoot sigue permitido).
+   - Bottom rim a sólo h=33 px sobre el suelo → salto pequeño basta.
+
+2. PLAYER COLLISION TAMBIÉN MÁS PEQUEÑO
+   - Visual:    44 × 56 px
+   - Colisión:  24 × 36 px (antes 28 × 42)
+   - Charlie efectivamente "ocupa" mucho menos para colisiones.
+
+3. ESPACIADO ENTRE AROS AUMENTADO
+   - Nivel 1: 400 a 540 px entre aros (antes 380 a 500)
+   - A 140 px/s → 2.9 a 3.9 segundos entre obstáculos
+
+4. TODO EL TEXTO EN ESPAÑOL LATINO
+   - Pantallas:  PRESIONA ESPACIO, CÓMO JUGAR, OBJETIVOS, CONTROLES…
+   - HUD:        RECORD-, NIVEL-, BONO-
+   - Mensajes:   NIVEL X, ¡LISTO!, ¡NIVEL X COMPLETO!, ¡FELICITACIONES!,
+                 PRESIONA ESPACIO PARA JUGAR DE NUEVO
+   - Solo "GAME OVER" se mantiene en inglés (es iconic arcade text
+     internacional y reconocible).
+
+## VALIDACIÓN DE TIMING (matemática)
+
+Con los parámetros actuales:
+- Tiempo de cruce de Charlie por aro (nivel 1):
+   (HOOP_COL_HALF_W*2 + PL_COL_HALF_W*2) / RUN_SPEED
+   = (32 + 24) / 140 = 0.4 s
+- Tiempo en zona segura (feet > 33 px sobre el suelo):
+   Resolviendo h(t) = 440t - 600t² ≥ 33
+   t ∈ (0.085, 0.648) → duración = 0.563 s
+- Margen para timing: 0.563 - 0.4 = 0.163 s ≈ 10 frames @ 60fps
+- Más una ventana de visibilidad previa de ~4 s
+
+→ El juego ahora es claramente jugable desde el primer intento.
+
+## ARQUITECTURA (igual a versiones previas)
+
+- Máquina de estados: title → howto → stageStart → playing →
+  stageClear → gameOver
+- Delta-time physics (independiente del framerate)
+- Cámara sigue al jugador; mundo en coordenadas absolutas
+- AABB con bbox separados visual y de colisión (forgiveness hitbox)
+- Edge-trigger input (un salto por pulsación)
+- Audio sintetizado con Web Audio API (square waves estilo 8-bit)
+- High-score persistente en localStorage
+- Renderizado 100% Canvas, sin assets externos
+
+## POSIBLES MEJORAS FUTURAS
+
+- Animación de Charlie saltando (sprite distinto a "corriendo")
+- Slow-motion al inicio del salto para mejor feedback visual
+- Stage 3 con mecánica nueva (trapecio, trampolín, etc.)
+- Música de fondo loop (chiptune con 3 osciladores)
+- Soporte touch para móviles
+- Botón de pausa
+
+=================================================================
+-->
+</body>
+</html>
